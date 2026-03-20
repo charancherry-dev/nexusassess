@@ -242,6 +242,36 @@
   .topic-chip{background:rgba(79,142,247,.1);border:1px solid rgba(79,142,247,.25);
     color:var(--accent2);padding:.25rem .6rem;border-radius:20px;font-size:.72rem;font-family:var(--mono);}
 
+  /* Analysis modal */
+  .analysis-q-card{background:var(--bg);border:1px solid var(--border);border-radius:10px;
+    padding:1.2rem;margin-bottom:1rem;transition:border-color .2s;}
+  .analysis-q-card.wrong{border-left:3px solid var(--danger);}
+  .analysis-q-card.correct{border-left:3px solid var(--accent);}
+  .analysis-q-card.skipped{border-left:3px solid var(--warn);}
+  .analysis-q-num{font-size:.7rem;color:var(--text2);font-family:var(--mono);margin-bottom:.4rem;
+    display:flex;justify-content:space-between;align-items:center;}
+  .analysis-q-text{font-size:.92rem;line-height:1.6;margin-bottom:.9rem;color:var(--text);}
+  .analysis-options{display:flex;flex-direction:column;gap:.4rem;}
+  .analysis-opt{padding:.5rem .8rem;border-radius:7px;font-size:.83rem;display:flex;gap:.7rem;align-items:flex-start;border:1px solid transparent;}
+  .analysis-opt.correct-opt{background:rgba(0,212,170,.1);border-color:rgba(0,212,170,.3);color:var(--accent);}
+  .analysis-opt.wrong-opt{background:rgba(255,71,87,.1);border-color:rgba(255,71,87,.3);color:var(--danger);}
+  .analysis-opt.neutral-opt{background:var(--surface2);color:var(--text2);}
+  .analysis-opt-letter{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;
+    justify-content:center;font-size:.72rem;font-weight:700;flex-shrink:0;background:var(--border);}
+  .status-chip{padding:.15rem .5rem;border-radius:10px;font-size:.68rem;font-weight:700;}
+  .status-chip.wrong{background:rgba(255,71,87,.15);color:var(--danger);}
+  .status-chip.correct{background:rgba(0,212,170,.15);color:var(--accent);}
+  .status-chip.skipped{background:rgba(255,165,2,.15);color:var(--warn);}
+  .analysis-filter-btn{background:var(--surface2);color:var(--text2);border:1px solid var(--border);}
+  .analysis-filter-btn.active{background:var(--accent2);color:#fff;border-color:var(--accent2);}
+  .topic-filter-btn{background:var(--surface2);color:var(--text2);border:1px solid var(--border);font-size:.72rem;padding:.3rem .7rem;}
+  .topic-filter-btn.active{background:var(--accent2);color:#fff;border-color:var(--accent2);}
+  .score-chip{padding:.3rem .7rem;border-radius:20px;font-size:.78rem;font-weight:700;}
+  .score-chip.correct{background:rgba(0,212,170,.15);color:var(--accent);}
+  .score-chip.wrong{background:rgba(255,71,87,.15);color:var(--danger);}
+  .score-chip.skipped{background:rgba(255,165,2,.15);color:var(--warn);}
+  .score-chip.pct{background:rgba(79,142,247,.15);color:var(--accent2);}
+
   @media(max-width:768px){
     .grid-2,.grid-3{grid-template-columns:1fr;}
     .test-sidebar{display:none;}
@@ -501,16 +531,73 @@
               <tr>
                 <th>ID</th><th>Name</th><th>Score</th><th>Correct</th>
                 <th>Wrong</th><th>Skipped</th><th>Time</th><th>Status</th>
+                <th>Analysis</th>
               </tr>
             </thead>
             <tbody id="results-tbody">
-              <tr><td colspan="8" style="text-align:center;color:var(--text2);padding:2rem;">No results yet.</td></tr>
+              <tr><td colspan="9" style="text-align:center;color:var(--text2);padding:2rem;">No results yet.</td></tr>
             </tbody>
           </table>
         </div>
       </div>
     </div>
 
+  </div>
+</div>
+
+<!-- ══ ANALYSIS MODAL ══ -->
+<div class="submit-confirm-overlay" id="analysis-modal" style="align-items:flex-start;padding:1.5rem;overflow-y:auto;">
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;
+    width:100%;max-width:900px;margin:auto;padding:0;overflow:hidden;">
+
+    <!-- Modal Header -->
+    <div style="background:var(--surface);border-bottom:1px solid var(--border);
+      padding:1.2rem 1.5rem;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:10;">
+      <div>
+        <div style="font-size:1.1rem;font-weight:700;" id="modal-cand-name">Candidate Name</div>
+        <div style="font-size:.75rem;color:var(--text2);font-family:var(--mono);" id="modal-cand-id">NXS-0000</div>
+      </div>
+      <div style="display:flex;gap:1rem;align-items:center;">
+        <!-- Score summary chips -->
+        <div id="modal-score-chips" style="display:flex;gap:.5rem;"></div>
+        <!-- Filter buttons -->
+        <div style="display:flex;gap:.4rem;">
+          <button class="btn btn-sm analysis-filter-btn active" id="filter-all"
+            onclick="setAnalysisFilter('all')">All</button>
+          <button class="btn btn-sm analysis-filter-btn" id="filter-wrong"
+            onclick="setAnalysisFilter('wrong')" style="background:rgba(255,71,87,.15);color:var(--danger);border:1px solid var(--danger);">Wrong</button>
+          <button class="btn btn-sm analysis-filter-btn" id="filter-correct"
+            onclick="setAnalysisFilter('correct')" style="background:rgba(0,212,170,.15);color:var(--accent);border:1px solid var(--accent);">Correct</button>
+          <button class="btn btn-sm analysis-filter-btn" id="filter-skipped"
+            onclick="setAnalysisFilter('skipped')" style="background:rgba(255,165,2,.15);color:var(--warn);border:1px solid var(--warn);">Skipped</button>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="closeAnalysisModal()">✕ Close</button>
+      </div>
+    </div>
+
+    <!-- Topic filter row -->
+    <div style="background:var(--surface2);border-bottom:1px solid var(--border);
+      padding:.75rem 1.5rem;display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;">
+      <span style="font-size:.72rem;color:var(--text2);">Topic:</span>
+      <button class="btn btn-sm topic-filter-btn active" onclick="setTopicFilter('all')" id="tf-all">All Topics</button>
+      <button class="btn btn-sm topic-filter-btn" onclick="setTopicFilter('Number System')" id="tf-ns">Number System</button>
+      <button class="btn btn-sm topic-filter-btn" onclick="setTopicFilter('Averages and Ages')" id="tf-aa">Averages &amp; Ages</button>
+      <button class="btn btn-sm topic-filter-btn" onclick="setTopicFilter('Ratio and Proportion')" id="tf-rp">Ratio &amp; Proportion</button>
+      <button class="btn btn-sm topic-filter-btn" onclick="setTopicFilter('Coding and Decoding')" id="tf-cd">Coding &amp; Decoding</button>
+      <button class="btn btn-sm topic-filter-btn" onclick="setTopicFilter('Blood Relations')" id="tf-br">Blood Relations</button>
+    </div>
+
+    <!-- Questions list -->
+    <div style="padding:1.5rem;max-height:65vh;overflow-y:auto;" id="analysis-questions-list">
+      <div style="text-align:center;color:var(--text2);padding:3rem;">Loading analysis…</div>
+    </div>
+
+    <!-- Export footer -->
+    <div style="background:var(--surface);border-top:1px solid var(--border);
+      padding:1rem 1.5rem;display:flex;justify-content:space-between;align-items:center;">
+      <div style="font-size:.75rem;color:var(--text2);" id="modal-filter-count">Showing all questions</div>
+      <button class="btn btn-sm btn-secondary" onclick="exportAnalysisCSV()">📥 Export to CSV</button>
+    </div>
   </div>
 </div>
 
@@ -773,6 +860,14 @@ function connectSSE() {
   es.addEventListener('incident_logged', (e) => {
     const inc = JSON.parse(e.data);
     appendIncidentLog(inc);
+  });
+
+  es.addEventListener('attempt_saved', (e) => {
+    const data = JSON.parse(e.data);
+    // Show toast only to admin
+    if (APP.isAdmin) {
+      toast(`📊 ${data.candidateName} submitted — analysis ready`, 'success');
+    }
   });
 
   es.onerror = () => {
@@ -1065,7 +1160,7 @@ function renderResultsTable() {
   const tbody = document.getElementById('results-tbody');
   if (!tbody) return;
   if (APP.results.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--text2);padding:2rem;">No results yet.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--text2);padding:2rem;">No results yet.</td></tr>';
     return;
   }
   tbody.innerHTML = APP.results.map(r => `
@@ -1080,8 +1175,194 @@ function renderResultsTable() {
       <td><span class="badge ${r.terminated?'badge-red':r.score>=60?'badge-green':'badge-yellow'}">
         ${r.terminated?'Terminated':r.score>=60?'Pass':'Fail'}
       </span></td>
+      <td>
+        <button class="btn btn-sm btn-secondary" onclick="openAnalysis('${r.id}','${r.name}')"
+          style="white-space:nowrap;">🔍 View Details</button>
+      </td>
     </tr>
   `).join('');
+}
+
+// ═══════════════════════════════════════
+// QUESTION ANALYSIS MODAL
+// ═══════════════════════════════════════
+const ANALYSIS = {
+  candidateId:   null,
+  candidateName: null,
+  allAttempts:   [],
+  filter:        'all',   // all | wrong | correct | skipped
+  topicFilter:   'all',
+};
+
+// Extend API object with attempt endpoints
+API.getAttempts      = (id) => api('GET', `/api/attempts/${id}`);
+API.saveAttempts     = (data) => api('POST', '/api/attempts', data);
+
+async function openAnalysis(candidateId, candidateName) {
+  ANALYSIS.candidateId   = candidateId;
+  ANALYSIS.candidateName = candidateName;
+  ANALYSIS.filter        = 'all';
+  ANALYSIS.topicFilter   = 'all';
+
+  document.getElementById('modal-cand-name').textContent = candidateName;
+  document.getElementById('modal-cand-id').textContent   = candidateId;
+  document.getElementById('analysis-questions-list').innerHTML =
+    '<div style="text-align:center;color:var(--text2);padding:3rem;"><div class="spinner" style="margin:0 auto 1rem;"></div>Loading analysis…</div>';
+
+  document.getElementById('analysis-modal').classList.add('show');
+
+  // Reset filter button states
+  document.querySelectorAll('.analysis-filter-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('filter-all').classList.add('active');
+  document.querySelectorAll('.topic-filter-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tf-all').classList.add('active');
+
+  const attempts = await API.getAttempts(candidateId);
+  if (!attempts || attempts.length === 0) {
+    document.getElementById('analysis-questions-list').innerHTML =
+      '<div style="text-align:center;color:var(--text2);padding:3rem;">No question data available for this candidate.<br><small>This candidate may have submitted before the analysis feature was added.</small></div>';
+    document.getElementById('modal-score-chips').innerHTML = '';
+    return;
+  }
+
+  ANALYSIS.allAttempts = attempts;
+  renderAnalysisScoreChips(attempts);
+  renderAnalysisQuestions();
+}
+
+function renderAnalysisScoreChips(attempts) {
+  const correct   = attempts.filter(a => a.is_correct).length;
+  const wrong     = attempts.filter(a => !a.is_correct && !a.is_unattempted).length;
+  const skipped   = attempts.filter(a => a.is_unattempted).length;
+  const total     = attempts.length;
+  const pct       = Math.round((correct / total) * 100);
+
+  document.getElementById('modal-score-chips').innerHTML = `
+    <span class="score-chip pct">${pct}%</span>
+    <span class="score-chip correct">✓ ${correct}</span>
+    <span class="score-chip wrong">✗ ${wrong}</span>
+    <span class="score-chip skipped">— ${skipped}</span>
+  `;
+}
+
+function setAnalysisFilter(f) {
+  ANALYSIS.filter = f;
+  document.querySelectorAll('.analysis-filter-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('filter-' + f).classList.add('active');
+  renderAnalysisQuestions();
+}
+
+function setTopicFilter(t) {
+  ANALYSIS.topicFilter = t;
+  document.querySelectorAll('.topic-filter-btn').forEach(b => b.classList.remove('active'));
+  // Map topic name to button ID
+  const idMap = {
+    'all': 'tf-all',
+    'Number System': 'tf-ns',
+    'Averages and Ages': 'tf-aa',
+    'Ratio and Proportion': 'tf-rp',
+    'Coding and Decoding': 'tf-cd',
+    'Blood Relations': 'tf-br',
+  };
+  const btnId = idMap[t];
+  if (btnId) document.getElementById(btnId).classList.add('active');
+  renderAnalysisQuestions();
+}
+
+function renderAnalysisQuestions() {
+  let attempts = [...ANALYSIS.allAttempts];
+
+  // Apply status filter
+  if (ANALYSIS.filter === 'wrong')   attempts = attempts.filter(a => !a.is_correct && !a.is_unattempted);
+  if (ANALYSIS.filter === 'correct') attempts = attempts.filter(a => a.is_correct);
+  if (ANALYSIS.filter === 'skipped') attempts = attempts.filter(a => a.is_unattempted);
+
+  // Apply topic filter
+  if (ANALYSIS.topicFilter !== 'all') attempts = attempts.filter(a => a.topic === ANALYSIS.topicFilter);
+
+  const container = document.getElementById('analysis-questions-list');
+  const countEl   = document.getElementById('modal-filter-count');
+
+  countEl.textContent = `Showing ${attempts.length} of ${ANALYSIS.allAttempts.length} questions`;
+
+  if (attempts.length === 0) {
+    container.innerHTML = '<div style="text-align:center;color:var(--text2);padding:3rem;">No questions match the selected filters.</div>';
+    return;
+  }
+
+  const letters = ['A','B','C','D'];
+
+  container.innerHTML = attempts.map((a, idx) => {
+    const options     = Array.isArray(a.options) ? a.options : JSON.parse(a.options || '[]');
+    const statusClass = a.is_unattempted ? 'skipped' : a.is_correct ? 'correct' : 'wrong';
+    const statusLabel = a.is_unattempted ? 'Skipped' : a.is_correct ? 'Correct' : 'Wrong';
+    const globalIdx   = ANALYSIS.allAttempts.indexOf(a) + 1;
+
+    const optionsHTML = options.map((opt, oi) => {
+      const isCorrect  = oi === a.correct_answer_index;
+      const isSelected = oi === a.user_answer_index;
+      let cls = 'neutral-opt';
+      let icon = '';
+      if (isCorrect)               { cls = 'correct-opt'; icon = ' ✓'; }
+      if (isSelected && !isCorrect){ cls = 'wrong-opt';   icon = ' ✗'; }
+
+      return `
+        <div class="analysis-opt ${cls}">
+          <span class="analysis-opt-letter">${letters[oi]}</span>
+          <span>${opt}${icon}${isSelected && !a.is_unattempted ? '<span style="font-size:.68rem;margin-left:.4rem;opacity:.7;">(selected)</span>' : ''}</span>
+        </div>`;
+    }).join('');
+
+    return `
+      <div class="analysis-q-card ${statusClass}">
+        <div class="analysis-q-num">
+          <span>Q${globalIdx} &nbsp;·&nbsp; <span style="color:var(--accent2)">${a.topic}</span></span>
+          <span class="status-chip ${statusClass}">${statusLabel}</span>
+        </div>
+        <div class="analysis-q-text">${a.question_text}</div>
+        <div class="analysis-options">${optionsHTML}</div>
+        ${a.is_unattempted ? `
+          <div style="margin-top:.7rem;font-size:.78rem;color:var(--warn);padding:.4rem .7rem;
+            background:rgba(255,165,2,.08);border-radius:6px;border:1px solid rgba(255,165,2,.2);">
+            ⚠️ This question was not attempted. Correct answer: <strong>${letters[a.correct_answer_index]}. ${a.correct_answer_text}</strong>
+          </div>` : ''}
+      </div>`;
+  }).join('');
+}
+
+function closeAnalysisModal() {
+  document.getElementById('analysis-modal').classList.remove('show');
+  ANALYSIS.allAttempts = [];
+}
+
+function exportAnalysisCSV() {
+  if (!ANALYSIS.allAttempts.length) return;
+
+  const letters = ['A','B','C','D'];
+  const rows = [['Q#','Topic','Question','Options','Correct Answer','User Answer','Status']];
+
+  ANALYSIS.allAttempts.forEach((a, i) => {
+    const options = Array.isArray(a.options) ? a.options : JSON.parse(a.options || '[]');
+    const status  = a.is_unattempted ? 'Skipped' : a.is_correct ? 'Correct' : 'Wrong';
+    const userAns = a.is_unattempted ? 'Not Attempted' : `${letters[a.user_answer_index]}. ${a.user_answer_text}`;
+    rows.push([
+      i + 1,
+      a.topic,
+      `"${a.question_text.replace(/"/g, '""')}"`,
+      `"${options.map((o,oi) => `${letters[oi]}. ${o}`).join(' | ')}"`,
+      `${letters[a.correct_answer_index]}. ${a.correct_answer_text}`,
+      userAns,
+      status,
+    ]);
+  });
+
+  const csv  = rows.map(r => r.join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const a    = document.createElement('a');
+  a.href     = URL.createObjectURL(blob);
+  a.download = `${ANALYSIS.candidateName}_${ANALYSIS.candidateId}_analysis.csv`;
+  a.click();
+  toast('Analysis exported to CSV ✅');
 }
 
 // ═══════════════════════════════════════
@@ -1728,9 +2009,9 @@ async function finalSubmit() {
   const score     = Math.round((correct / q.length) * 100);
   const timeTaken = formatTime(Math.floor((Date.now() - APP.session.startTime) / 1000));
 
-  APP.session.candidate.status    = 'completed';
-  APP.session.candidate.score     = score;
-  APP.session.candidate.result    = { correct, wrong, unattempted, timeTaken, score };
+  APP.session.candidate.status = 'completed';
+  APP.session.candidate.score  = score;
+  APP.session.candidate.result = { correct, wrong, unattempted, timeTaken, score };
 
   const result = {
     id: APP.session.candidate.id,
@@ -1739,10 +2020,34 @@ async function finalSubmit() {
     terminated: false,
   };
 
-  // Save to server — this broadcasts to admin via SSE
+  // Build per-question attempt records for admin analysis
+  const letters  = ['A','B','C','D'];
+  const attempts = q.map((question, i) => {
+    const userIdx      = APP.session.answers[i];
+    const isUnattempted = userIdx === undefined;
+    const isCorrect    = !isUnattempted && userIdx === question.answer;
+    return {
+      questionText:       question.q,
+      topic:              question.topic,
+      options:            question.options,
+      correctAnswerIndex: question.answer,
+      correctAnswerText:  question.options[question.answer],
+      userAnswerIndex:    isUnattempted ? null : userIdx,
+      userAnswerText:     isUnattempted ? null : question.options[userIdx],
+      isCorrect,
+      isUnattempted,
+    };
+  });
+
+  // Save everything to server simultaneously
   await Promise.all([
     API.saveCandidate(APP.session.candidate),
     API.saveResult(result),
+    API.saveAttempts({
+      candidateId:   APP.session.candidate.id,
+      candidateName: APP.session.candidate.name,
+      attempts,
+    }),
   ]);
 
   if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
@@ -1779,6 +2084,26 @@ async function terminateAndSave(reason) {
       }
     });
     const timeTaken = formatTime(Math.floor((Date.now() - APP.session.startTime) / 1000));
+
+    // Build attempt records (only for questions seen so far)
+    const letters  = ['A','B','C','D'];
+    const attempts = q.map((question, i) => {
+      const userIdx       = APP.session.answers[i];
+      const isUnattempted = userIdx === undefined;
+      const isCorrect     = !isUnattempted && userIdx === question.answer;
+      return {
+        questionText:       question.q,
+        topic:              question.topic,
+        options:            question.options,
+        correctAnswerIndex: question.answer,
+        correctAnswerText:  question.options[question.answer],
+        userAnswerIndex:    isUnattempted ? null : userIdx,
+        userAnswerText:     isUnattempted ? null : question.options[userIdx],
+        isCorrect,
+        isUnattempted,
+      };
+    });
+
     const result = {
       id: APP.session.candidate.id,
       name: APP.session.candidate.name,
@@ -1786,9 +2111,15 @@ async function terminateAndSave(reason) {
       unattempted: q.length - correct - wrong,
       timeTaken, terminated: true,
     };
+
     await Promise.all([
       API.saveCandidate(APP.session.candidate),
       API.saveResult(result),
+      API.saveAttempts({
+        candidateId:   APP.session.candidate.id,
+        candidateName: APP.session.candidate.name,
+        attempts,
+      }),
     ]);
   }
 
