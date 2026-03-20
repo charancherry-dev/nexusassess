@@ -1,0 +1,1901 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NexusAssess — Enterprise Aptitude Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0a0c10;--surface:#111318;--surface2:#181c24;--border:#1e2330;
+    --accent:#00d4aa;--accent2:#4f8ef7;--danger:#ff4757;--warn:#ffa502;
+    --text:#e8eaf0;--text2:#8892a4;--text3:#4a5568;--card:#13161e;
+    --glow:0 0 30px rgba(0,212,170,0.15);
+    --font:'Space Grotesk',sans-serif;--mono:'JetBrains Mono',monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+  .screen{display:none;min-height:100vh;}
+  .screen.active{display:flex;}
+
+  /* LANDING */
+  #screen-landing{flex-direction:column;align-items:center;justify-content:center;
+    background:radial-gradient(ellipse at 20% 50%,rgba(0,212,170,.08) 0%,transparent 60%),
+    radial-gradient(ellipse at 80% 20%,rgba(79,142,247,.06) 0%,transparent 50%),var(--bg);
+    position:relative;overflow:hidden;}
+  #screen-landing::before{content:'';position:absolute;inset:0;
+    background-image:linear-gradient(rgba(0,212,170,.03) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,212,170,.03) 1px,transparent 1px);background-size:60px 60px;}
+  .landing-logo{font-family:'Playfair Display',serif;font-size:3.2rem;color:var(--accent);
+    letter-spacing:-1px;margin-bottom:.3rem;position:relative;}
+  .landing-logo span{color:var(--text2);font-size:1rem;font-family:var(--mono);display:block;
+    text-align:center;letter-spacing:4px;margin-top:-5px;}
+  .landing-subtitle{color:var(--text2);font-size:1rem;margin-bottom:3rem;text-align:center;}
+  .role-cards{display:flex;gap:1.5rem;flex-wrap:wrap;justify-content:center;}
+  .role-card{background:var(--card);border:1px solid var(--border);border-radius:16px;
+    padding:2rem 2.5rem;cursor:pointer;transition:all .3s;text-align:center;min-width:200px;
+    position:relative;overflow:hidden;}
+  .role-card:hover{border-color:var(--accent);transform:translateY(-4px);box-shadow:var(--glow);}
+  .role-card .icon{font-size:2.5rem;margin-bottom:1rem;}
+  .role-card h3{font-size:1.1rem;font-weight:600;}
+  .role-card p{font-size:.8rem;color:var(--text2);margin-top:.4rem;}
+
+  /* ADMIN */
+  #screen-admin{flex-direction:column;background:var(--bg);}
+  .admin-header{background:var(--surface);border-bottom:1px solid var(--border);
+    padding:1rem 2rem;display:flex;align-items:center;justify-content:space-between;
+    flex-wrap:wrap;gap:.75rem;}
+  .admin-header h1{font-size:1.2rem;color:var(--accent);}
+  .admin-tabs{display:flex;gap:.5rem;flex-wrap:wrap;}
+  .tab-btn{background:transparent;border:1px solid var(--border);color:var(--text2);
+    padding:.5rem 1.2rem;border-radius:8px;cursor:pointer;font-family:var(--font);
+    font-size:.85rem;transition:all .2s;}
+  .tab-btn.active,.tab-btn:hover{background:var(--accent);color:#000;border-color:var(--accent);font-weight:600;}
+  .admin-content{flex:1;padding:2rem;overflow-y:auto;}
+  .admin-tab-content{display:none;}
+  .admin-tab-content.active{display:block;}
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;}
+  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.5rem;}
+  .card h3{font-size:.9rem;color:var(--text2);margin-bottom:1rem;text-transform:uppercase;letter-spacing:1px;}
+  .stat-val{font-size:2.5rem;font-weight:700;color:var(--accent);}
+  .stat-lbl{font-size:.8rem;color:var(--text2);margin-top:.2rem;}
+
+  /* FORMS */
+  .form-group{margin-bottom:1rem;}
+  .form-group label{display:block;font-size:.8rem;color:var(--text2);margin-bottom:.4rem;}
+  input,select,textarea{width:100%;background:var(--surface2);border:1px solid var(--border);
+    border-radius:8px;padding:.75rem 1rem;color:var(--text);font-family:var(--font);
+    font-size:.9rem;outline:none;transition:border-color .2s;}
+  input:focus,select:focus,textarea:focus{border-color:var(--accent);}
+  select option{background:var(--surface2);}
+
+  /* BUTTONS */
+  .btn{background:var(--accent);color:#000;border:none;border-radius:8px;
+    padding:.75rem 1.5rem;font-family:var(--font);font-weight:600;font-size:.9rem;
+    cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:.5rem;}
+  .btn:hover{background:#00bfa0;transform:translateY(-1px);}
+  .btn:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+  .btn.btn-danger{background:var(--danger);color:#fff;}
+  .btn.btn-danger:hover{background:#e0394a;}
+  .btn.btn-secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border);}
+  .btn.btn-secondary:hover{border-color:var(--accent);color:var(--accent);}
+  .btn.btn-sm{padding:.4rem .8rem;font-size:.8rem;}
+
+  /* TABLE */
+  .user-table{width:100%;border-collapse:collapse;}
+  .user-table th{text-align:left;font-size:.75rem;color:var(--text2);text-transform:uppercase;
+    letter-spacing:1px;padding:.75rem 1rem;border-bottom:1px solid var(--border);}
+  .user-table td{padding:.75rem 1rem;font-size:.85rem;border-bottom:1px solid rgba(255,255,255,.03);}
+  .user-table tr:hover td{background:rgba(255,255,255,.02);}
+  .badge{display:inline-block;padding:.2rem .6rem;border-radius:20px;font-size:.72rem;font-weight:600;}
+  .badge-green{background:rgba(0,212,170,.15);color:var(--accent);}
+  .badge-yellow{background:rgba(255,165,2,.15);color:var(--warn);}
+  .badge-red{background:rgba(255,71,87,.15);color:var(--danger);}
+  .badge-gray{background:rgba(255,255,255,.05);color:var(--text2);}
+
+  /* LOGIN */
+  .login-box{background:var(--card);border:1px solid var(--border);border-radius:20px;
+    padding:2.5rem;width:100%;max-width:420px;box-shadow:0 20px 60px rgba(0,0,0,.5);}
+  .login-box p{font-size:.85rem;color:var(--text2);margin-bottom:2rem;}
+
+  /* INSTRUCTIONS */
+  #screen-instructions{flex-direction:column;align-items:center;justify-content:center;
+    background:var(--bg);padding:2rem;}
+  .instructions-box{background:var(--card);border:1px solid var(--border);border-radius:20px;
+    padding:2.5rem;max-width:640px;width:100%;}
+  .instructions-box h2{color:var(--accent);margin-bottom:.5rem;}
+  .instructions-box .meta{font-size:.8rem;color:var(--text2);margin-bottom:1.5rem;font-family:var(--mono);}
+  .rule-item{display:flex;gap:.8rem;padding:.75rem 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:.88rem;}
+  .rule-item:last-child{border:none;}
+  .rule-icon{color:var(--warn);flex-shrink:0;margin-top:1px;}
+  .fullscreen-notice{background:rgba(255,165,2,.1);border:1px solid rgba(255,165,2,.3);
+    border-radius:8px;padding:.75rem 1rem;font-size:.82rem;color:var(--warn);margin-bottom:1rem;
+    display:flex;gap:.5rem;align-items:flex-start;}
+
+  /* TEST */
+  #screen-test{flex-direction:column;background:var(--bg);}
+  .test-header{background:var(--surface);border-bottom:1px solid var(--border);
+    padding:.9rem 1.5rem;display:flex;align-items:center;justify-content:space-between;
+    position:sticky;top:0;z-index:100;}
+  .test-header-left{display:flex;align-items:center;gap:1rem;}
+  .test-header-logo{font-family:'Playfair Display',serif;color:var(--accent);font-size:1.1rem;}
+  .candidate-info{font-size:.8rem;}
+  .candidate-info span{color:var(--text2);}
+  .test-timer{background:var(--surface2);border:1px solid var(--border);border-radius:10px;
+    padding:.5rem 1.2rem;display:flex;align-items:center;gap:.6rem;
+    font-family:var(--mono);font-size:1.3rem;font-weight:500;}
+  .test-timer.urgent{border-color:var(--danger);color:var(--danger);animation:timer-pulse .8s infinite;}
+  @keyframes timer-pulse{0%,100%{background:var(--surface2);}50%{background:rgba(255,71,87,.1);}}
+  .test-body{display:flex;flex:1;overflow:hidden;}
+  .test-sidebar{width:260px;background:var(--surface);border-right:1px solid var(--border);
+    padding:1rem;overflow-y:auto;flex-shrink:0;}
+  .q-palette-title{font-size:.75rem;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:.8rem;}
+  .q-palette{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;}
+  .q-dot{aspect-ratio:1;border-radius:6px;display:flex;align-items:center;justify-content:center;
+    font-size:.72rem;font-weight:600;cursor:pointer;transition:all .15s;
+    background:var(--surface2);color:var(--text2);border:1px solid var(--border);}
+  .q-dot.answered{background:rgba(0,212,170,.2);color:var(--accent);border-color:var(--accent);}
+  .q-dot.current{background:var(--accent2);color:#fff;border-color:var(--accent2);}
+  .q-dot.marked{background:rgba(255,165,2,.2);color:var(--warn);border-color:var(--warn);}
+  .q-dot:hover{transform:scale(1.1);}
+  .palette-legend{margin-top:1rem;display:flex;flex-direction:column;gap:.4rem;}
+  .legend-item{display:flex;align-items:center;gap:.5rem;font-size:.72rem;color:var(--text2);}
+  .legend-dot{width:12px;height:12px;border-radius:3px;flex-shrink:0;}
+  .progress-bar-wrap{margin-top:1.5rem;}
+  .progress-bar-wrap label{font-size:.72rem;color:var(--text2);display:flex;justify-content:space-between;margin-bottom:.4rem;}
+  .progress-bar{height:4px;background:var(--border);border-radius:4px;overflow:hidden;}
+  .progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:4px;transition:width .4s;}
+  .test-main{flex:1;padding:2rem;overflow-y:auto;display:flex;flex-direction:column;gap:1.5rem;}
+  .q-meta{font-size:.75rem;color:var(--text2);font-family:var(--mono);display:flex;gap:1rem;align-items:center;}
+  .q-meta .topic-tag{background:rgba(79,142,247,.15);color:var(--accent2);padding:.2rem .6rem;border-radius:4px;font-size:.7rem;}
+  .q-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:2rem;}
+  .q-text{font-size:1.05rem;line-height:1.7;color:var(--text);margin-bottom:1.8rem;}
+  .options-list{display:flex;flex-direction:column;gap:.75rem;}
+  .option-btn{background:var(--surface2);border:1px solid var(--border);border-radius:10px;
+    padding:1rem 1.2rem;cursor:pointer;display:flex;align-items:flex-start;gap:1rem;
+    text-align:left;transition:all .2s;color:var(--text);font-family:var(--font);
+    font-size:.9rem;line-height:1.5;width:100%;}
+  .option-btn:hover{border-color:var(--accent2);background:rgba(79,142,247,.05);}
+  .option-btn.selected{border-color:var(--accent);background:rgba(0,212,170,.1);color:var(--accent);}
+  .opt-letter{width:28px;height:28px;border-radius:50%;background:var(--border);display:flex;
+    align-items:center;justify-content:center;font-size:.8rem;font-weight:700;flex-shrink:0;
+    transition:all .2s;margin-top:-2px;}
+  .option-btn.selected .opt-letter{background:var(--accent);color:#000;}
+  .q-actions{display:flex;gap:1rem;justify-content:space-between;align-items:center;flex-wrap:wrap;}
+  .q-actions-left{display:flex;gap:.75rem;flex-wrap:wrap;}
+  .btn-mark{background:rgba(255,165,2,.1);border:1px solid rgba(255,165,2,.3);color:var(--warn);}
+  .btn-mark:hover{background:rgba(255,165,2,.2);}
+  .btn-mark.marked{background:rgba(255,165,2,.25);}
+
+  /* RESULT */
+  #screen-result{flex-direction:column;align-items:center;justify-content:center;background:var(--bg);padding:2rem;}
+  .result-box{background:var(--card);border:1px solid var(--border);border-radius:20px;
+    padding:2.5rem;max-width:560px;width:100%;text-align:center;}
+  .result-score{font-size:5rem;font-weight:700;line-height:1;
+    background:linear-gradient(135deg,var(--accent),var(--accent2));
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin:1rem 0;}
+  .result-grade{font-size:1.1rem;color:var(--text2);margin-bottom:1.5rem;}
+  .result-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin:1.5rem 0;}
+  .result-stat{background:var(--surface2);border-radius:10px;padding:1rem;}
+  .result-stat .val{font-size:1.5rem;font-weight:700;}
+  .result-stat .lbl{font-size:.72rem;color:var(--text2);margin-top:.2rem;}
+
+  /* TERMINATED */
+  #screen-terminated{flex-direction:column;align-items:center;justify-content:center;
+    background:radial-gradient(ellipse at center,rgba(255,71,87,.08) 0%,var(--bg) 70%);
+    text-align:center;padding:2rem;}
+
+  /* OVERLAYS */
+  .cheat-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.97);z-index:9999;
+    flex-direction:column;align-items:center;justify-content:center;text-align:center;}
+  .cheat-overlay.show{display:flex;}
+  .cheat-icon{font-size:4rem;margin-bottom:1rem;}
+  .cheat-title{font-size:1.8rem;font-weight:700;color:var(--danger);margin-bottom:.5rem;}
+  .cheat-msg{color:var(--text2);font-size:.95rem;max-width:440px;line-height:1.6;}
+  .cheat-countdown{font-family:var(--mono);font-size:3rem;color:var(--danger);margin:1.5rem 0;}
+  .submit-confirm-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);
+    z-index:9990;align-items:center;justify-content:center;}
+  .submit-confirm-overlay.show{display:flex;}
+  .submit-confirm-box{background:var(--card);border:1px solid var(--border);border-radius:16px;
+    padding:2rem;max-width:400px;width:90%;text-align:center;}
+  .submit-confirm-box h3{font-size:1.2rem;margin-bottom:.5rem;}
+  .submit-confirm-box p{color:var(--text2);font-size:.85rem;margin-bottom:1.5rem;}
+  .btn-row{display:flex;gap:1rem;justify-content:center;}
+
+  /* LOADING */
+  .loading-screen{display:none;position:fixed;inset:0;background:var(--bg);z-index:8888;
+    flex-direction:column;align-items:center;justify-content:center;gap:1rem;}
+  .loading-screen.show{display:flex;}
+  .spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--accent);
+    border-radius:50%;animation:spin .8s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .loading-msg{color:var(--text2);font-size:.9rem;font-family:var(--mono);}
+
+  /* TOAST */
+  .toast{position:fixed;bottom:2rem;right:2rem;background:var(--surface);border:1px solid var(--border);
+    border-radius:10px;padding:.9rem 1.5rem;z-index:9000;font-size:.85rem;
+    transform:translateY(100px);opacity:0;transition:all .3s;max-width:320px;}
+  .toast.show{transform:translateY(0);opacity:1;}
+  .toast.toast-success{border-color:var(--accent);color:var(--accent);}
+  .toast.toast-error{border-color:var(--danger);color:var(--danger);}
+  .toast.toast-warn{border-color:var(--warn);color:var(--warn);}
+
+  /* LIVE INDICATOR */
+  .live-dot{display:inline-block;width:8px;height:8px;border-radius:50%;
+    background:var(--accent);margin-right:5px;animation:pulse-dot 1.5s infinite;}
+  @keyframes pulse-dot{0%,100%{opacity:1;}50%{opacity:.3;}}
+  .conn-status{font-size:.72rem;font-family:var(--mono);padding:.3rem .7rem;
+    border-radius:20px;background:rgba(0,212,170,.1);color:var(--accent);
+    border:1px solid rgba(0,212,170,.2);}
+  .conn-status.disconnected{background:rgba(255,71,87,.1);color:var(--danger);
+    border-color:rgba(255,71,87,.2);}
+
+  /* MISC */
+  hr{border:none;border-top:1px solid var(--border);margin:1.5rem 0;}
+  .text-accent{color:var(--accent);}
+  ::-webkit-scrollbar{width:5px;}
+  ::-webkit-scrollbar-track{background:var(--surface);}
+  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:5px;}
+  .mobile-q-nav{display:none;overflow-x:auto;padding:.6rem .9rem;
+    background:var(--surface);border-bottom:1px solid var(--border);gap:5px;}
+  .topic-chip{background:rgba(79,142,247,.1);border:1px solid rgba(79,142,247,.25);
+    color:var(--accent2);padding:.25rem .6rem;border-radius:20px;font-size:.72rem;font-family:var(--mono);}
+
+  @media(max-width:768px){
+    .grid-2,.grid-3{grid-template-columns:1fr;}
+    .test-sidebar{display:none;}
+    .mobile-q-nav{display:flex;}
+    .mobile-q-nav .q-dot{flex-shrink:0;width:32px;height:32px;}
+    .admin-content{padding:1rem;}
+    .test-main{padding:1rem;}
+    .admin-header{padding:.8rem 1rem;}
+  }
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div class="loading-screen" id="loading-screen">
+  <div class="spinner"></div>
+  <div class="loading-msg" id="loading-msg">Connecting to server…</div>
+</div>
+
+<!-- CHEAT OVERLAY -->
+<div class="cheat-overlay" id="cheat-overlay">
+  <div class="cheat-icon">🚨</div>
+  <div class="cheat-title">INTEGRITY VIOLATION DETECTED</div>
+  <div class="cheat-msg">You navigated away from the test window. This incident has been recorded. Your test will be terminated.</div>
+  <div class="cheat-countdown" id="cheat-countdown">5</div>
+  <div style="color:var(--text2);font-size:.8rem;">Test ending in <span id="cheat-cd-txt">5</span> seconds…</div>
+</div>
+
+<!-- SUBMIT CONFIRM -->
+<div class="submit-confirm-overlay" id="submit-confirm-overlay">
+  <div class="submit-confirm-box">
+    <div style="font-size:2rem;margin-bottom:.5rem;">📋</div>
+    <h3>Submit Test?</h3>
+    <p>You have answered <strong id="confirm-answered">0</strong> out of <strong id="confirm-total">0</strong> questions. Once submitted, you cannot go back.</p>
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="closeSubmitConfirm()">Review</button>
+      <button class="btn" onclick="finalSubmit()">Submit Test</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- ══ LANDING ══ -->
+<div class="screen active" id="screen-landing">
+  <div style="position:relative;z-index:1;text-align:center;">
+    <div class="landing-logo">NexusAssess<span>ENTERPRISE APTITUDE PLATFORM</span></div>
+    <p class="landing-subtitle">Trusted by TCS · Infosys · Wipro · Accenture · HCL</p>
+    <div class="role-cards">
+      <div class="role-card" onclick="showScreen('admin-login')">
+        <div class="icon">🛡️</div>
+        <h3>Admin Panel</h3>
+        <p>Manage candidates, configure tests, analyse results</p>
+      </div>
+      <div class="role-card" onclick="showScreen('candidate-login')">
+        <div class="icon">🎓</div>
+        <h3>Candidate Portal</h3>
+        <p>Login with your assigned credentials to begin the test</p>
+      </div>
+    </div>
+    <p style="margin-top:2rem;font-size:.72rem;color:var(--text3);font-family:var(--mono);">
+      v3.0 · Real-time Sync · 315 MNC Questions · Railway Hosted
+    </p>
+  </div>
+</div>
+
+<!-- ══ ADMIN LOGIN ══ -->
+<div class="screen" id="screen-admin-login"
+  style="flex-direction:column;align-items:center;justify-content:center;background:var(--bg);padding:1rem;">
+  <div class="login-box">
+    <div style="font-family:'Playfair Display',serif;font-size:1.4rem;color:var(--accent);margin-bottom:.3rem;">🛡️ Admin Login</div>
+    <p>Enter your administrator password to access the control panel.</p>
+    <div class="form-group" style="margin-top:1.5rem;">
+      <label>Admin Password</label>
+      <input type="password" id="admin-pass-input" placeholder="Enter password" autofocus
+        onkeydown="if(event.key==='Enter') adminLogin()">
+    </div>
+    <button class="btn" style="width:100%;margin-top:.5rem;" onclick="adminLogin()">Access Admin Panel →</button>
+    <button class="btn btn-secondary" style="width:100%;margin-top:.75rem;" onclick="showScreen('landing')">← Back</button>
+  </div>
+</div>
+
+<!-- ══ ADMIN PANEL ══ -->
+<div class="screen" id="screen-admin" style="flex-direction:column;">
+  <div class="admin-header">
+    <div style="display:flex;align-items:center;gap:1rem;">
+      <h1>🛡️ NexusAssess Admin</h1>
+      <span class="conn-status" id="conn-status"><span class="live-dot"></span>Live</span>
+    </div>
+    <div class="admin-tabs">
+      <button class="tab-btn active" onclick="switchAdminTab('dashboard',event)">Dashboard</button>
+      <button class="tab-btn" onclick="switchAdminTab('candidates',event)">Candidates</button>
+      <button class="tab-btn" onclick="switchAdminTab('questions',event)">Question Bank</button>
+      <button class="tab-btn" onclick="switchAdminTab('incidents',event)">Incidents</button>
+      <button class="tab-btn" onclick="switchAdminTab('results',event)">Results</button>
+      <button class="btn btn-danger btn-sm" onclick="adminLogout()">Logout</button>
+    </div>
+  </div>
+
+  <div class="admin-content">
+
+    <!-- DASHBOARD -->
+    <div class="admin-tab-content active" id="tab-dashboard">
+      <div class="grid-3" style="margin-bottom:1.5rem;">
+        <div class="card">
+          <h3>Total Candidates</h3>
+          <div class="stat-val" id="stat-total">0</div>
+          <div class="stat-lbl">Registered</div>
+        </div>
+        <div class="card">
+          <h3>Active Now</h3>
+          <div class="stat-val" id="stat-active" style="color:var(--accent2);">0</div>
+          <div class="stat-lbl">Taking test</div>
+        </div>
+        <div class="card">
+          <h3>Completed</h3>
+          <div class="stat-val" id="stat-completed" style="color:var(--warn);">0</div>
+          <div class="stat-lbl">Submitted</div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3>Test Configuration</h3>
+          <div class="form-group">
+            <label>Test Duration (minutes)</label>
+            <input type="number" id="cfg-duration" value="60" min="10" max="180">
+          </div>
+          <div class="form-group">
+            <label>Questions per Candidate (max 60)</label>
+            <input type="number" id="cfg-qcount" value="30" min="5" max="60">
+          </div>
+          <div class="form-group">
+            <label>Difficulty Level</label>
+            <select id="cfg-difficulty">
+              <option value="hard" selected>Hard (20 LPA / MNC Level)</option>
+              <option value="medium">Medium (Campus Placement)</option>
+            </select>
+          </div>
+          <button class="btn" onclick="saveConfig()">💾 Save &amp; Broadcast Config</button>
+          <div style="font-size:.72rem;color:var(--text2);margin-top:.5rem;">
+            ⚡ Config changes broadcast to all connected browsers instantly
+          </div>
+        </div>
+        <div class="card">
+          <h3>Question Bank</h3>
+          <div style="margin-bottom:1rem;">
+            <div class="stat-val" id="qbank-count" style="font-size:2rem;">315</div>
+            <div class="stat-lbl">Questions loaded</div>
+          </div>
+          <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.75rem;" id="qbank-topic-dist"></div>
+          <hr>
+          <div style="font-size:.72rem;color:var(--text2);">
+            5 Topics · Each candidate gets a unique random set covering all topics equally
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:1.5rem;">
+        <h3>⚡ Danger Zone</h3>
+        <div style="display:flex;gap:1rem;flex-wrap:wrap;">
+          <button class="btn btn-danger btn-sm" onclick="clearAllCandidates()">🗑️ Clear All Candidates</button>
+          <button class="btn btn-danger btn-sm" onclick="clearAllResults()">🗑️ Clear All Results</button>
+        </div>
+        <div style="font-size:.72rem;color:var(--text2);margin-top:.5rem;">These actions are permanent and cannot be undone.</div>
+      </div>
+    </div>
+
+    <!-- CANDIDATES -->
+    <div class="admin-tab-content" id="tab-candidates">
+      <div class="grid-2" style="margin-bottom:1.5rem;">
+        <div class="card">
+          <h3>Add New Candidate</h3>
+          <div class="form-group">
+            <label>Full Name</label>
+            <input type="text" id="new-cand-name" placeholder="John Doe">
+          </div>
+          <div class="form-group">
+            <label>Candidate ID (auto-generated)</label>
+            <input type="text" id="new-cand-id" placeholder="NXS-0001" readonly>
+          </div>
+          <div class="form-group">
+            <label>Password</label>
+            <input type="text" id="new-cand-pass" placeholder="Auto-generated">
+          </div>
+          <button class="btn" onclick="addCandidate()">➕ Add Candidate</button>
+        </div>
+        <div class="card">
+          <h3>Bulk Import</h3>
+          <p style="color:var(--text2);font-size:.85rem;margin-bottom:1rem;">
+            Enter one name per line. IDs and passwords are auto-generated.
+          </p>
+          <textarea rows="5" id="bulk-names" placeholder="Alice Johnson&#10;Bob Smith&#10;Carol White"></textarea>
+          <button class="btn" style="margin-top:.75rem;" onclick="bulkAddCandidates()">📋 Bulk Add</button>
+        </div>
+      </div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+          <h3 style="margin:0;">Candidate List</h3>
+          <button class="btn btn-secondary btn-sm" onclick="exportCredentials()">📥 Export Credentials</button>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="user-table">
+            <thead>
+              <tr>
+                <th>ID</th><th>Name</th><th>Password</th>
+                <th>Status</th><th>Score</th><th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="candidates-tbody">
+              <tr><td colspan="6" style="text-align:center;color:var(--text2);padding:2rem;">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- QUESTION BANK -->
+    <div class="admin-tab-content" id="tab-questions">
+      <div class="card" style="margin-bottom:1.5rem;">
+        <h3>Topic Distribution</h3>
+        <div style="display:flex;gap:2rem;flex-wrap:wrap;" id="qbank-topic-stats"></div>
+      </div>
+      <div class="card">
+        <h3>Sample Questions (first 10 of 315)</h3>
+        <div id="q-bank-preview"></div>
+      </div>
+    </div>
+
+    <!-- INCIDENTS -->
+    <div class="admin-tab-content" id="tab-incidents">
+      <div class="card">
+        <h3>🚨 Integrity Violation Log</h3>
+        <p style="color:var(--text2);font-size:.85rem;margin-bottom:1rem;">
+          All tab-switch, blur, and fullscreen violations are logged here in real-time.
+        </p>
+        <div id="incident-log" style="font-family:var(--mono);font-size:.78rem;color:var(--text2);
+          max-height:400px;overflow-y:auto;background:var(--bg);border-radius:8px;padding:1rem;">
+          <div style="color:var(--text3);">No incidents logged yet.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESULTS -->
+    <div class="admin-tab-content" id="tab-results">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+          <h3 style="margin:0;">Test Results</h3>
+          <span style="font-size:.75rem;color:var(--accent);font-family:var(--mono);">
+            <span class="live-dot"></span>Auto-updates when candidates submit
+          </span>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="user-table">
+            <thead>
+              <tr>
+                <th>ID</th><th>Name</th><th>Score</th><th>Correct</th>
+                <th>Wrong</th><th>Skipped</th><th>Time</th><th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="results-tbody">
+              <tr><td colspan="8" style="text-align:center;color:var(--text2);padding:2rem;">No results yet.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══ CANDIDATE LOGIN ══ -->
+<div class="screen" id="screen-candidate-login"
+  style="flex-direction:column;align-items:center;justify-content:center;
+  background:radial-gradient(ellipse at 70% 80%,rgba(79,142,247,.07) 0%,transparent 60%),var(--bg);">
+  <div class="login-box">
+    <div style="font-family:'Playfair Display',serif;font-size:1.4rem;color:var(--accent2);margin-bottom:.3rem;">🎓 Candidate Login</div>
+    <p>Use the credentials provided by your exam coordinator.</p>
+    <div class="form-group">
+      <label>Candidate ID</label>
+      <input type="text" id="cand-id-input" placeholder="e.g. NXS-0042"
+        onkeydown="if(event.key==='Enter') document.getElementById('cand-pass-input').focus()">
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="cand-pass-input" placeholder="••••••••"
+        onkeydown="if(event.key==='Enter') candidateLogin()">
+    </div>
+    <button class="btn" style="width:100%;background:var(--accent2);" onclick="candidateLogin()">
+      Verify &amp; Continue →
+    </button>
+    <button class="btn btn-secondary" style="width:100%;margin-top:.75rem;" onclick="showScreen('landing')">← Back</button>
+    <p style="text-align:center;font-size:.72rem;color:var(--text3);margin-top:1.5rem;">
+      Each candidate receives a unique random question set.
+    </p>
+  </div>
+</div>
+
+<!-- ══ INSTRUCTIONS ══ -->
+<div class="screen" id="screen-instructions" style="padding:2rem;">
+  <div class="instructions-box">
+    <h2>📋 Test Instructions</h2>
+    <div class="meta" id="instr-meta">30 Questions · 60 Minutes</div>
+    <div class="fullscreen-notice">
+      ⚠️ This test runs in fullscreen. Switching tabs or minimizing will terminate your test.
+    </div>
+    <div class="rule-item"><span class="rule-icon">⚠️</span><span>Do NOT switch browser tabs or windows during the test.</span></div>
+    <div class="rule-item"><span class="rule-icon">⚠️</span><span>Do NOT minimize the browser window at any point.</span></div>
+    <div class="rule-item"><span class="rule-icon">📌</span><span>Each question has exactly one correct answer. No negative marking.</span></div>
+    <div class="rule-item"><span class="rule-icon">📌</span><span>You can mark questions for review and return to them anytime.</span></div>
+    <div class="rule-item"><span class="rule-icon">📌</span><span>Submit before the timer ends. The test auto-submits at timeout.</span></div>
+    <div class="rule-item"><span class="rule-icon">🔒</span><span>Your question set is unique — no two candidates receive the same questions.</span></div>
+    <div class="rule-item"><span class="rule-icon">📚</span><span>Topics: Number System · Averages &amp; Ages · Ratio &amp; Proportion · Coding &amp; Decoding · Blood Relations</span></div>
+    <button class="btn" style="width:100%;margin-top:1.5rem;padding:1rem;font-size:1rem;" onclick="startTest()">
+      I Agree — Begin Test →
+    </button>
+    <div style="font-size:.72rem;color:var(--text2);text-align:center;margin-top:.5rem;">
+      By clicking you agree to the exam integrity policy.
+    </div>
+  </div>
+</div>
+
+<!-- ══ TEST ══ -->
+<div class="screen" id="screen-test" style="flex-direction:column;">
+  <div class="test-header">
+    <div class="test-header-left">
+      <div class="test-header-logo">NexusAssess</div>
+      <div class="candidate-info">
+        <span>Candidate: </span><strong id="test-cand-name">—</strong>
+        &nbsp;|&nbsp;
+        <span>ID: </span><strong id="test-cand-id">—</strong>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:1rem;">
+      <div class="test-timer" id="test-timer">
+        <span>⏱</span><span id="timer-display">60:00</span>
+      </div>
+      <button class="btn btn-secondary btn-sm" onclick="openSubmitConfirm()">Submit Test</button>
+    </div>
+  </div>
+
+  <div class="mobile-q-nav" id="mobile-q-nav"></div>
+
+  <div class="test-body">
+    <div class="test-sidebar">
+      <div class="q-palette-title">Question Navigator</div>
+      <div class="q-palette" id="q-palette"></div>
+      <div class="palette-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:rgba(0,212,170,.2);border:1px solid var(--accent);"></div>Answered</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--accent2);"></div>Current</div>
+        <div class="legend-item"><div class="legend-dot" style="background:rgba(255,165,2,.2);border:1px solid var(--warn);"></div>Marked for review</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--surface2);border:1px solid var(--border);"></div>Not visited</div>
+      </div>
+      <div class="progress-bar-wrap">
+        <label><span>Progress</span><span id="progress-text">0/30</span></label>
+        <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+      </div>
+    </div>
+
+    <div class="test-main">
+      <div class="q-meta">
+        <span class="q-number" id="q-number">Question 1 of 30</span>
+        <span class="topic-tag" id="q-topic">Topic</span>
+        <span>Difficulty: <strong style="color:var(--danger)">Hard</strong></span>
+      </div>
+      <div class="q-card">
+        <div class="q-text" id="q-text">Loading question…</div>
+        <div class="options-list" id="options-list"></div>
+      </div>
+      <div class="q-actions">
+        <div class="q-actions-left">
+          <button class="btn btn-secondary" id="btn-prev" onclick="navigate(-1)">← Previous</button>
+          <button class="btn btn-mark" id="btn-mark" onclick="toggleMark()">🔖 Mark for Review</button>
+          <button class="btn btn-secondary" onclick="clearAnswer()">Clear</button>
+        </div>
+        <button class="btn" id="btn-next" onclick="navigate(1)">Next →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ RESULT ══ -->
+<div class="screen" id="screen-result">
+  <div class="result-box">
+    <div style="font-size:1.5rem;">🏆</div>
+    <h2 style="margin:.5rem 0;">Test Completed</h2>
+    <div id="result-candidate-name" style="color:var(--text2);font-size:.9rem;"></div>
+    <div class="result-score" id="result-score">85%</div>
+    <div class="result-grade" id="result-grade">Excellent Performance</div>
+    <div class="result-stats">
+      <div class="result-stat"><div class="val text-accent" id="res-correct">0</div><div class="lbl">Correct</div></div>
+      <div class="result-stat"><div class="val" style="color:var(--danger)" id="res-wrong">0</div><div class="lbl">Wrong</div></div>
+      <div class="result-stat"><div class="val" style="color:var(--text2)" id="res-unattempted">0</div><div class="lbl">Skipped</div></div>
+    </div>
+    <div style="font-size:.8rem;color:var(--text2);font-family:var(--mono);margin-bottom:1.5rem;" id="res-time"></div>
+    <p style="font-size:.85rem;color:var(--text2);">Your results have been saved. The examiner will review and notify you.</p>
+  </div>
+</div>
+
+<!-- ══ TERMINATED ══ -->
+<div class="screen" id="screen-terminated">
+  <div style="max-width:480px;text-align:center;">
+    <div style="font-size:4rem;margin-bottom:1rem;">🚫</div>
+    <h1 style="color:var(--danger);font-size:2rem;margin-bottom:.5rem;">Test Terminated</h1>
+    <p style="color:var(--text2);font-size:.95rem;line-height:1.7;max-width:400px;margin:0 auto 1.5rem;">
+      Your test has been terminated due to a violation of exam integrity policy.
+    </p>
+    <div style="background:rgba(255,71,87,.08);border:1px solid rgba(255,71,87,.2);border-radius:10px;
+      padding:1rem;font-size:.82rem;color:var(--text2);margin-bottom:1.5rem;">
+      Reason: <strong style="color:var(--danger)" id="terminate-reason">—</strong><br>
+      Candidate: <strong id="terminate-name">—</strong><br>
+      Time: <strong id="terminate-time">—</strong>
+    </div>
+    <button class="btn btn-secondary" onclick="showScreen('landing')">Return to Home</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     JAVASCRIPT
+══════════════════════════════════════ -->
+<script>
+'use strict';
+
+// ═══════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════
+const APP = {
+  candidates: [],
+  results: [],
+  questionBank: [],
+  testConfig: { duration: 60, qCount: 30, difficulty: 'hard' },
+  incidents: [],
+  session: {
+    candidate: null,
+    questions: [],
+    answers: {},
+    marked: new Set(),
+    currentQ: 0,
+    startTime: null,
+    timerInterval: null,
+    remainingSeconds: 0,
+    terminated: false,
+    submitted: false,
+  },
+  usedQuestions: {},   // candidateId -> Set of question texts used
+  idCounter: 1000,
+  sseSource: null,
+  isAdmin: false,
+};
+
+// ═══════════════════════════════════════
+// API HELPERS
+// ═══════════════════════════════════════
+async function api(method, path, body) {
+  try {
+    const opts = {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+    };
+    if (body) opts.body = JSON.stringify(body);
+    const res = await fetch(path, opts);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  } catch (e) {
+    console.error(`API ${method} ${path} failed:`, e);
+    return null;
+  }
+}
+
+const API = {
+  getCandidates:   () => api('GET',    '/api/candidates'),
+  saveCandidate:   (c) => api('POST',  '/api/candidates', c),
+  bulkCandidates:  (cs)=> api('POST',  '/api/candidates/bulk', { candidates: cs }),
+  deleteCandidate: (id)=> api('DELETE',`/api/candidates/${id}`),
+  clearCandidates: () => api('DELETE', '/api/candidates'),
+  getResults:      () => api('GET',    '/api/results'),
+  saveResult:      (r) => api('POST',  '/api/results', r),
+  clearResults:    () => api('DELETE', '/api/results'),
+  getConfig:       () => api('GET',    '/api/config'),
+  saveConfig:      (c) => api('POST',  '/api/config', c),
+  getIncidents:    () => api('GET',    '/api/incidents'),
+  logIncident:     (i) => api('POST',  '/api/incidents', i),
+};
+
+// ═══════════════════════════════════════
+// SERVER-SENT EVENTS — Real-time updates
+// ═══════════════════════════════════════
+function connectSSE() {
+  if (APP.sseSource) APP.sseSource.close();
+
+  const es = new EventSource('/api/events');
+  APP.sseSource = es;
+
+  es.addEventListener('connected', () => {
+    console.log('SSE connected ✅');
+    updateConnStatus(true);
+  });
+
+  // Admin panel receives live updates
+  es.addEventListener('candidates_updated', (e) => {
+    const data = JSON.parse(e.data);
+    APP.candidates = data;
+    renderCandidatesTable();
+    refreshAdminStats();
+  });
+
+  es.addEventListener('results_updated', (e) => {
+    const data = JSON.parse(e.data);
+    APP.results = data;
+    renderResultsTable();
+    refreshAdminStats();
+  });
+
+  // Config broadcast — candidates get updated config before starting
+  es.addEventListener('config_updated', (e) => {
+    const cfg = JSON.parse(e.data);
+    APP.testConfig.duration   = cfg.duration;
+    APP.testConfig.qCount     = cfg.q_count;
+    APP.testConfig.difficulty = cfg.difficulty;
+    // Update admin form fields if visible
+    const durEl = document.getElementById('cfg-duration');
+    const qcEl  = document.getElementById('cfg-qcount');
+    if (durEl) durEl.value = cfg.duration;
+    if (qcEl)  qcEl.value  = cfg.q_count;
+    console.log('Config updated via SSE:', cfg);
+  });
+
+  es.addEventListener('incident_logged', (e) => {
+    const inc = JSON.parse(e.data);
+    appendIncidentLog(inc);
+  });
+
+  es.onerror = () => {
+    updateConnStatus(false);
+    // Reconnect after 3 seconds
+    setTimeout(connectSSE, 3000);
+  };
+}
+
+function updateConnStatus(online) {
+  const el = document.getElementById('conn-status');
+  if (!el) return;
+  if (online) {
+    el.className = 'conn-status';
+    el.innerHTML = '<span class="live-dot"></span>Live';
+  } else {
+    el.className = 'conn-status disconnected';
+    el.innerHTML = '⚠️ Reconnecting…';
+  }
+}
+
+function appendIncidentLog(inc) {
+  const log = document.getElementById('incident-log');
+  if (!log) return;
+  const existing = log.querySelector('[style*="color:var(--text3)"]');
+  if (existing) existing.remove();
+  const line = document.createElement('div');
+  line.style.cssText = 'padding:.4rem 0;border-bottom:1px solid var(--border);';
+  line.innerHTML = `<span style="color:var(--danger)">[${inc.time || inc.happened_at}]</span> <strong>${inc.candidateName || inc.candidate_name}</strong>: ${inc.reason}`;
+  log.prepend(line);
+}
+
+// ═══════════════════════════════════════
+// SCREEN
+// ═══════════════════════════════════════
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+}
+
+function toast(msg, type = 'success') {
+  const el = document.getElementById('toast');
+  el.className = `toast toast-${type} show`;
+  el.textContent = msg;
+  setTimeout(() => el.classList.remove('show'), 3500);
+}
+
+function showLoading(msg = 'Loading…') {
+  document.getElementById('loading-msg').textContent = msg;
+  document.getElementById('loading-screen').classList.add('show');
+}
+
+function hideLoading() {
+  document.getElementById('loading-screen').classList.remove('show');
+}
+
+// ═══════════════════════════════════════
+// ADMIN FLOW
+// ═══════════════════════════════════════
+async function adminLogin() {
+  const pass = document.getElementById('admin-pass-input').value;
+  if (pass !== 'Chaitu@Aptitude') {
+    toast('Incorrect password.', 'error');
+    document.getElementById('admin-pass-input').value = '';
+    return;
+  }
+  showLoading('Loading admin panel…');
+  APP.isAdmin = true;
+
+  // Load all data from server
+  const [candidates, results, config, incidents] = await Promise.all([
+    API.getCandidates(),
+    API.getResults(),
+    API.getConfig(),
+    API.getIncidents(),
+  ]);
+
+  if (candidates) APP.candidates = candidates;
+  if (results)    APP.results    = results;
+  if (config) {
+    APP.testConfig.duration   = config.duration;
+    APP.testConfig.qCount     = config.q_count;
+    APP.testConfig.difficulty = config.difficulty;
+    document.getElementById('cfg-duration').value   = config.duration;
+    document.getElementById('cfg-qcount').value     = config.q_count;
+    document.getElementById('cfg-difficulty').value = config.difficulty;
+  }
+  if (incidents) {
+    // Populate incident log
+    const log = document.getElementById('incident-log');
+    if (incidents.length > 0) {
+      log.innerHTML = '';
+      incidents.forEach(inc => appendIncidentLog({
+        time: inc.happened_at,
+        candidateName: inc.candidate_name,
+        reason: inc.reason
+      }));
+    }
+  }
+
+  hideLoading();
+  showScreen('admin');
+  renderCandidatesTable();
+  renderResultsTable();
+  refreshAdminStats();
+  updateQBankStats();
+  renderQBankPreview();
+  toast('Admin panel loaded ✅');
+}
+
+function adminLogout() {
+  APP.isAdmin = false;
+  document.getElementById('admin-pass-input').value = '';
+  showScreen('landing');
+}
+
+function switchAdminTab(tab, e) {
+  document.querySelectorAll('.admin-tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  if (e && e.target) e.target.classList.add('active');
+}
+
+async function saveConfig() {
+  const duration   = parseInt(document.getElementById('cfg-duration').value)   || 60;
+  const qCount     = Math.min(parseInt(document.getElementById('cfg-qcount').value)  || 30, 60);
+  const difficulty = document.getElementById('cfg-difficulty').value;
+  document.getElementById('cfg-qcount').value = qCount;
+
+  APP.testConfig = { duration, qCount, difficulty };
+
+  const res = await API.saveConfig({ duration, qCount, difficulty });
+  if (res && res.success) {
+    toast(`Config saved & broadcast to all browsers! ⚡`);
+  } else {
+    toast('Failed to save config', 'error');
+  }
+}
+
+function refreshAdminStats() {
+  document.getElementById('stat-total').textContent     = APP.candidates.length;
+  document.getElementById('stat-active').textContent    = APP.candidates.filter(c => c.status === 'active').length;
+  document.getElementById('stat-completed').textContent = APP.candidates.filter(c => c.status === 'completed').length;
+}
+
+async function clearAllCandidates() {
+  if (!confirm('Delete ALL candidates? This cannot be undone.')) return;
+  await API.clearCandidates();
+  toast('All candidates cleared');
+}
+
+async function clearAllResults() {
+  if (!confirm('Delete ALL results? This cannot be undone.')) return;
+  await API.clearResults();
+  toast('All results cleared');
+}
+
+// ═══════════════════════════════════════
+// CANDIDATES MANAGEMENT
+// ═══════════════════════════════════════
+function generateId() {
+  APP.idCounter++;
+  return 'NXS-' + String(APP.idCounter).padStart(4, '0');
+}
+
+function generatePass() {
+  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  let p = '';
+  for (let i = 0; i < 8; i++) p += chars[Math.floor(Math.random() * chars.length)];
+  return p;
+}
+
+// Auto-fill ID and pass when name is typed
+document.addEventListener('DOMContentLoaded', () => {
+  const nameEl = document.getElementById('new-cand-name');
+  if (nameEl) {
+    nameEl.addEventListener('input', () => {
+      // Calculate next ID based on existing candidates
+      const maxId = APP.candidates.reduce((max, c) => {
+        const num = parseInt(c.id.replace('NXS-', '')) || 0;
+        return Math.max(max, num);
+      }, 1000);
+      APP.idCounter = maxId;
+      document.getElementById('new-cand-id').value  = generateId();
+      if (!document.getElementById('new-cand-pass').value)
+        document.getElementById('new-cand-pass').value = generatePass();
+    });
+  }
+});
+
+async function addCandidate() {
+  const name = document.getElementById('new-cand-name').value.trim();
+  if (!name) { toast('Enter candidate name', 'error'); return; }
+
+  const maxId = APP.candidates.reduce((max, c) => {
+    const num = parseInt(c.id.replace('NXS-', '')) || 0;
+    return Math.max(max, num);
+  }, 1000);
+  APP.idCounter = maxId;
+
+  const id   = document.getElementById('new-cand-id').value.trim()  || generateId();
+  const pass = document.getElementById('new-cand-pass').value.trim() || generatePass();
+  const cand = { id, name, pass, status: 'pending', score: null, result: null, qAnswered: 0 };
+
+  const res = await API.saveCandidate(cand);
+  if (res && res.success) {
+    document.getElementById('new-cand-name').value = '';
+    document.getElementById('new-cand-id').value   = '';
+    document.getElementById('new-cand-pass').value  = '';
+    toast(`${name} added (${id}) — visible to all browsers ⚡`);
+  } else {
+    toast('Failed to add candidate', 'error');
+  }
+}
+
+async function bulkAddCandidates() {
+  const raw = document.getElementById('bulk-names').value.trim();
+  if (!raw) { toast('Enter names', 'error'); return; }
+  const names = raw.split('\n').map(n => n.trim()).filter(Boolean);
+
+  const maxId = APP.candidates.reduce((max, c) => {
+    const num = parseInt(c.id.replace('NXS-', '')) || 0;
+    return Math.max(max, num);
+  }, 1000);
+  APP.idCounter = maxId;
+
+  const candidates = names.map(name => ({
+    id:   generateId(),
+    name,
+    pass: generatePass(),
+    status:     'pending',
+    score:      null,
+    result:     null,
+    qAnswered:  0,
+  }));
+
+  const res = await API.bulkCandidates(candidates);
+  if (res && res.success) {
+    document.getElementById('bulk-names').value = '';
+    toast(`${names.length} candidates added ⚡`);
+  } else {
+    toast('Failed to bulk add', 'error');
+  }
+}
+
+async function removeCandidate(id) {
+  const res = await API.deleteCandidate(id);
+  if (res && res.success) {
+    toast('Candidate removed');
+  } else {
+    toast('Failed to remove candidate', 'error');
+  }
+}
+
+function renderCandidatesTable() {
+  const tbody = document.getElementById('candidates-tbody');
+  if (!tbody) return;
+  if (APP.candidates.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text2);padding:2rem;">No candidates yet. Add some above.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = APP.candidates.map(c => `
+    <tr>
+      <td style="font-family:var(--mono);font-size:.8rem;">${c.id}</td>
+      <td>${c.name}</td>
+      <td style="font-family:var(--mono);font-size:.8rem;color:var(--text2);">${c.pass}</td>
+      <td><span class="badge ${
+        c.status==='active'?'badge-green':
+        c.status==='completed'?'badge-yellow':
+        c.status==='terminated'?'badge-red':'badge-gray'
+      }">${c.status}</span></td>
+      <td>${c.score !== null && c.score !== undefined ? c.score + '%' : '—'}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="removeCandidate('${c.id}')">Remove</button></td>
+    </tr>
+  `).join('');
+}
+
+function exportCredentials() {
+  if (APP.candidates.length === 0) { toast('No candidates to export', 'warn'); return; }
+  const lines = ['ID,Name,Password,Status'];
+  APP.candidates.forEach(c => lines.push(`${c.id},${c.name},${c.pass},${c.status}`));
+  const blob = new Blob([lines.join('\n')], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'nexusassess_credentials.csv';
+  a.click();
+}
+
+function renderResultsTable() {
+  const tbody = document.getElementById('results-tbody');
+  if (!tbody) return;
+  if (APP.results.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--text2);padding:2rem;">No results yet.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = APP.results.map(r => `
+    <tr>
+      <td style="font-family:var(--mono);font-size:.8rem;">${r.id}</td>
+      <td>${r.name}</td>
+      <td style="font-weight:700;color:${r.score>=60?'var(--accent)':'var(--danger)'}">${r.score}%</td>
+      <td style="color:var(--accent);">${r.correct}</td>
+      <td style="color:var(--danger);">${r.wrong}</td>
+      <td style="color:var(--text2);">${r.unattempted}</td>
+      <td style="font-family:var(--mono);font-size:.8rem;">${r.time_taken || r.timeTaken}</td>
+      <td><span class="badge ${r.terminated?'badge-red':r.score>=60?'badge-green':'badge-yellow'}">
+        ${r.terminated?'Terminated':r.score>=60?'Pass':'Fail'}
+      </span></td>
+    </tr>
+  `).join('');
+}
+
+// ═══════════════════════════════════════
+// QUESTION BANK
+// ═══════════════════════════════════════
+function buildQuestionBank() {
+  APP.questionBank = [
+  // NUMBER SYSTEM (62)
+  {q:"The product of two numbers is 9375 and their HCF is 15. What is their LCM?",options:["615","625","635","645"],answer:1,topic:"Number System"},
+  {q:"What is the largest 4-digit number exactly divisible by 88?",options:["9944","9856","9768","9988"],answer:0,topic:"Number System"},
+  {q:"If a number when divided by 56 gives remainder 29, what will be the remainder when divided by 8?",options:["4","5","6","7"],answer:1,topic:"Number System"},
+  {q:"How many 3-digit numbers are divisible by both 6 and 9?",options:["33","34","50","99"],answer:2,topic:"Number System"},
+  {q:"Find the number of factors of 1080.",options:["30","32","36","40"],answer:1,topic:"Number System"},
+  {q:"A number when divided successively by 4 and 5 leaves remainders 1 and 4. Remainder when divided by 20?",options:["14","17","19","21"],answer:1,topic:"Number System"},
+  {q:"Sum of squares of two consecutive even numbers is 340. Find the numbers.",options:["10,12","12,14","8,10","14,16"],answer:1,topic:"Number System"},
+  {q:"If N = 2³×3⁴×5²×7, how many factors does 2N have?",options:["60","80","90","120"],answer:3,topic:"Number System"},
+  {q:"The difference between squares of two consecutive odd integers is always divisible by:",options:["3","6","7","8"],answer:3,topic:"Number System"},
+  {q:"Which of the following is NOT a perfect square?",options:["1444","1521","1681","1764"],answer:0,topic:"Number System"},
+  {q:"Find the unit digit of 17¹³⁵ × 13²⁰¹ × 19¹⁵⁰.",options:["1","3","7","9"],answer:2,topic:"Number System"},
+  {q:"LCM of two numbers is 2310 and HCF is 30. One number is 210. Find the other.",options:["320","330","340","360"],answer:1,topic:"Number System"},
+  {q:"How many zeros are at the end of 100!?",options:["20","22","24","25"],answer:2,topic:"Number System"},
+  {q:"If p and q are prime numbers such that p² - q² = 72, find p + q.",options:["12","14","18","20"],answer:2,topic:"Number System"},
+  {q:"If sum of digits of a two-digit number is 9 and when 27 is added digits are reversed, find the number.",options:["27","36","45","54"],answer:1,topic:"Number System"},
+  {q:"What is the remainder when 2²⁰⁰ is divided by 7?",options:["1","2","4","6"],answer:1,topic:"Number System"},
+  {q:"Find smallest number to be added to 1000 so that 45 divides the sum exactly.",options:["10","35","80","90"],answer:0,topic:"Number System"},
+  {q:"A number has exactly 12 factors. Which CANNOT be the number?",options:["60","72","96","80"],answer:2,topic:"Number System"},
+  {q:"Remainder when 1! + 2! + 3! + ... + 100! is divided by 10:",options:["3","4","5","7"],answer:0,topic:"Number System"},
+  {q:"Number of ways to express 360 as product of two co-prime numbers:",options:["4","6","8","12"],answer:2,topic:"Number System"},
+  {q:"What is the highest power of 6 that divides 100!?",options:["16","24","48","97"],answer:1,topic:"Number System"},
+  {q:"If n! has exactly 30 trailing zeros, find the smallest possible n.",options:["120","125","127","130"],answer:1,topic:"Number System"},
+  {q:"How many 5-digit numbers have all digits different and odd?",options:["60","120","240","480"],answer:1,topic:"Number System"},
+  {q:"What is the remainder when (13⁹⁰+14⁹⁰+15⁹⁰+16⁹⁰) is divided by 29?",options:["0","1","4","28"],answer:0,topic:"Number System"},
+  {q:"If HCF of two numbers is 8 and their sum is 200, how many such pairs exist?",options:["4","6","7","9"],answer:2,topic:"Number System"},
+  {q:"Euler's totient φ(100) equals:",options:["20","30","40","50"],answer:2,topic:"Number System"},
+  {q:"If 3ˣ=5ʸ=15ᶻ, then z equals:",options:["xy/(x+y)","x+y","xy","(x+y)/xy"],answer:0,topic:"Number System"},
+  {q:"The number 0.142857142857… as a fraction is:",options:["1/7","1/6","2/14","5/35"],answer:0,topic:"Number System"},
+  {q:"Remainder when 7^(7^7) is divided by 5:",options:["2","3","4","1"],answer:1,topic:"Number System"},
+  {q:"How many integers from 1 to 500 are divisible by 3 or 7 but NOT by both?",options:["190","204","215","220"],answer:1,topic:"Number System"},
+  {q:"If 2ᵃ=3, 3ᵇ=4, 4ᶜ=5, 5ᵈ=6, the value of abcd is:",options:["1","2","3","4"],answer:1,topic:"Number System"},
+  {q:"How many 6-digit palindromes exist?",options:["900","990","9000","9900"],answer:0,topic:"Number System"},
+  {q:"What is remainder when 9^(9^9) is divided by 6?",options:["1","2","3","4"],answer:2,topic:"Number System"},
+  {q:"If p is prime > 5, then p² - 1 is always divisible by:",options:["12","18","24","36"],answer:2,topic:"Number System"},
+  {q:"If log₁₀(2) = 0.3010, how many digits does 2¹⁰⁰ have?",options:["30","31","32","33"],answer:1,topic:"Number System"},
+  {q:"Which of the following has the most divisors?",options:["120","128","180","240"],answer:3,topic:"Number System"},
+  {q:"For natural number n, n⁵ - n is always divisible by:",options:["15","18","30","60"],answer:2,topic:"Number System"},
+  {q:"Sum of all factors of 720 is:",options:["2418","2456","2508","2840"],answer:0,topic:"Number System"},
+  {q:"A number N: divided by 5 gives remainder 3, by 4 gives 2, by 3 gives 1. Smallest such N?",options:["22","58","118","178"],answer:1,topic:"Number System"},
+  {q:"If x is positive integer and x + 1/x = 3, find x³ + 1/x³.",options:["18","24","27","36"],answer:0,topic:"Number System"},
+  {q:"How many times does digit 5 appear from 1 to 1000?",options:["200","271","300","301"],answer:2,topic:"Number System"},
+  {q:"Two numbers differ by 5, LCM is 195, HCF is 1. One is 13. Find the other.",options:["8","15","18","20"],answer:1,topic:"Number System"},
+  {q:"(n⁴ - n²) is divisible by ___ for all positive integers n>1:",options:["8","10","12","24"],answer:2,topic:"Number System"},
+  {q:"1/(1×2) + 1/(2×3) + ... + 1/(99×100) =",options:["99/100","100/101","1/100","49/50"],answer:0,topic:"Number System"},
+  {q:"Product of two numbers is 4107. HCF is 37. The greater number is:",options:["101","107","111","185"],answer:2,topic:"Number System"},
+  {q:"If 5ˣ + 5^(x+1) = 750, what is x?",options:["2","3","4","5"],answer:1,topic:"Number System"},
+  {q:"What is the simplified value of (1.728+1)/1.24 + (1-0.343)/2.19?",options:["2.25","2.5","2.4","2.33"],answer:1,topic:"Number System"},
+  {q:"Find smallest positive integer n such that n²-19n+99 is a perfect square.",options:["1","9","10","11"],answer:2,topic:"Number System"},
+  {q:"How many 4-digit numbers have digit sum 10 with all distinct digits?",options:["42","54","60","72"],answer:2,topic:"Number System"},
+  {q:"If a, b are natural numbers and aᵇ = bᵃ with a≠b, one solution is:",options:["a=2,b=4","a=3,b=6","a=4,b=8","a=2,b=8"],answer:0,topic:"Number System"},
+  {q:"Digit in units place of (1!+2!+3!+...+2024!) is:",options:["3","5","7","9"],answer:0,topic:"Number System"},
+  {q:"N is 2-digit number. Product of digits is perfect cube and sum is perfect square. N is:",options:["18","24","81","48"],answer:2,topic:"Number System"},
+  {q:"The number of ways to write 84 as sum of three distinct positive integers:",options:["98","105","112","119"],answer:1,topic:"Number System"},
+  {q:"Find smallest N > 1 such that N, N+2, N+6, N+8 are all prime.",options:["5","11","17","29"],answer:1,topic:"Number System"},
+  {q:"Maximum remainder when 5-digit number is divided by 99?",options:["97","98","99","100"],answer:1,topic:"Number System"},
+  {q:"If x = 0.36̄ and y = 0.27̄, then x/y equals:",options:["4/3","3/4","36/27","4/5"],answer:0,topic:"Number System"},
+  {q:"Product of all factors of 36 equals:",options:["36⁴","36^4.5","36⁵","36³"],answer:1,topic:"Number System"},
+  {q:"Number of prime numbers between 1 and 100 that remain prime when digits reversed:",options:["7","9","11","13"],answer:2,topic:"Number System"},
+  {q:"Sum of all 3-digit numbers that leave remainder 3 when divided by 7:",options:["70218","70336","70521","71071"],answer:3,topic:"Number System"},
+  {q:"A 6-digit number 5x4y2z is divisible by 18. Minimum value of x+y+z (non-zero)?",options:["3","5","7","9"],answer:1,topic:"Number System"},
+  {q:"The number 2²⁹ has how many digits?",options:["8","9","10","11"],answer:1,topic:"Number System"},
+  {q:"If 5^X × 3^Y = 225 × 405, find X^(2Y-3X).",options:["27","81","125","25"],answer:0,topic:"Number System"},
+
+  // AVERAGES AND AGES (62)
+  {q:"Average of 5 consecutive odd numbers is 45. Product of largest and smallest?",options:["1935","2021","2025","2035"],answer:1,topic:"Averages and Ages"},
+  {q:"Student's average in 6 subjects is 84. Excluding highest and lowest (differ by 30), average is 82. Highest marks?",options:["94","96","98","100"],answer:2,topic:"Averages and Ages"},
+  {q:"Average age of family of 6 is 22. Youngest is 4. Average at birth of youngest?",options:["18","20","21","22"],answer:2,topic:"Averages and Ages"},
+  {q:"Ravi's average score in 8 tests is 78. Min score (40≤score≤100)?",options:["24","40","44","50"],answer:0,topic:"Averages and Ages"},
+  {q:"Cricket team of 11, avg age 28. Captain 6 years older than vice-captain, removing both avg is 27.25. Captain's age?",options:["29","31","33","35"],answer:2,topic:"Averages and Ages"},
+  {q:"A is 3 times B's age. 5 years ago A was 7 times B's age. Ratio after 10 years?",options:["2:1","5:3","3:2","7:5"],answer:0,topic:"Averages and Ages"},
+  {q:"Average weight 30 boys is 60kg. 5 leave (avg 50kg), 5 join, avg increases by 2. New 5 boys avg?",options:["64","68","72","76"],answer:2,topic:"Averages and Ages"},
+  {q:"A,B,C have average age 24. A:B=3:4, B:C=5:6. C's age?",options:["24","26","28","30"],answer:3,topic:"Averages and Ages"},
+  {q:"Average of 10 numbers is 7. Each multiplied by 12 then 5 added. New average?",options:["84","89","90","94"],answer:1,topic:"Averages and Ages"},
+  {q:"Man's age is 125% of son's. 10 years hence father's is 112.5% of son's. Present ages?",options:["30,24","35,28","40,32","50,40"],answer:3,topic:"Averages and Ages"},
+  {q:"Average salary of 60 employees is ₹32,000. 25 managers average ₹40,000. Remaining staff avg?",options:["₹26,000","₹27,000","₹27,500","₹28,000"],answer:1,topic:"Averages and Ages"},
+  {q:"Average of A,B,C is 45. A+B=2C and A-B=24. Find A.",options:["54","60","63","66"],answer:2,topic:"Averages and Ages"},
+  {q:"Batsman's avg after 15 innings is 42. To avg 45 after 20, what must he avg in next 5?",options:["54","56","57","60"],answer:2,topic:"Averages and Ages"},
+  {q:"6 years ago ratio P:Q = 6:7. 4 years hence ratio is 8:9. Present sum of ages?",options:["50","54","58","62"],answer:2,topic:"Averages and Ages"},
+  {q:"Average in 4 exams is 68. To achieve avg of 70 in 5 exams, 5th score must be?",options:["76","78","80","82"],answer:1,topic:"Averages and Ages"},
+  {q:"Father 30 years older than son. 5 years ago father was 4 times son's age. When will father be twice son's age?",options:["25 years hence","30 years hence","35 years hence","40 years hence"],answer:2,topic:"Averages and Ages"},
+  {q:"Average of 25 results is 18. First 12 average 14, last 12 average 17. Find 13th result.",options:["74","78","80","72"],answer:1,topic:"Averages and Ages"},
+  {q:"3 years ago average age of family of 5 was 17. Baby born since. Current average?",options:["15","16","17","18"],answer:2,topic:"Averages and Ages"},
+  {q:"Car travels 100km at 40km/h and next 100km at 60km/h. Average speed?",options:["48","50","52","54"],answer:0,topic:"Averages and Ages"},
+  {q:"Sum of ages of 5 children born at 3-year intervals is 50. Age of youngest?",options:["4","6","8","10"],answer:0,topic:"Averages and Ages"},
+  {q:"Average of 20 numbers is zero. At most how many can be greater than zero?",options:["0","1","19","20"],answer:2,topic:"Averages and Ages"},
+  {q:"A's age is double B's. 4 years ago A was triple B's age. In how many years will A be 1.5 times B's?",options:["4","6","8","12"],answer:2,topic:"Averages and Ages"},
+  {q:"Mean of 50 observations is 36. Observation 48 misread as 23. Corrected mean?",options:["36.5","37.0","37.5","38.0"],answer:0,topic:"Averages and Ages"},
+  {q:"Ages A,B,C in AP. Product of A and C is 275 and B is 17. Find A.",options:["11","13","15","25"],answer:3,topic:"Averages and Ages"},
+  {q:"Average of 30 girls is 80, 20 boys is 70. Overall class average?",options:["74","75","76","78"],answer:2,topic:"Averages and Ages"},
+  {q:"If average of x, x+2, x+4, x+6, x+8 is 51, find x.",options:["43","45","47","49"],answer:2,topic:"Averages and Ages"},
+  {q:"Team of 8 avg age 36. Members aged 45 and 55 leave. New average?",options:["31","32","33","34"],answer:0,topic:"Averages and Ages"},
+  {q:"If mean of a,b,c is M, mean of a+k, b+k, c+k, k is?",options:["M+k","M+3k/4","(3M+4k)/4","(M+k)/4"],answer:2,topic:"Averages and Ages"},
+  {q:"Aman 3 years older than Boman. 3 years later sum of their ages is 35. Aman's current age?",options:["14","15","16","17"],answer:3,topic:"Averages and Ages"},
+  {q:"Average temp Mon-Wed is 30°C, Tue-Thu is 28°C. Thursday is 7/9 of Monday. Monday's temp?",options:["36°C","40°C","45°C","48°C"],answer:2,topic:"Averages and Ages"},
+  {q:"Average of 8 numbers is 40. Average of 6 of them is 46. Average of remaining 2?",options:["16","18","20","22"],answer:0,topic:"Averages and Ages"},
+  {q:"P is 20% older than Q. Q is 20% younger than R. P is ___% younger/older than R?",options:["4% younger","4% older","0%","2% older"],answer:0,topic:"Averages and Ages"},
+  {q:"Average of first n natural numbers is 50. How many numbers?",options:["99","100","101","98"],answer:0,topic:"Averages and Ages"},
+  {q:"Ratio of mother and daughter ages is 7:3. After 4 years becomes 2:1. Mother's current age?",options:["28","30","35","42"],answer:0,topic:"Averages and Ages"},
+  {q:"A scored 60% in Paper 1 (100 marks) and 75% in Paper 2 (200 marks). Overall average %?",options:["67.5%","70%","72%","75%"],answer:1,topic:"Averages and Ages"},
+  {q:"Average of 12 consecutive even numbers is 63. Find the largest.",options:["72","74","76","78"],answer:1,topic:"Averages and Ages"},
+  {q:"Average age of 40 students is 15. Teacher included, becomes 16. Teacher's age?",options:["52","54","56","58"],answer:2,topic:"Averages and Ages"},
+  {q:"Man's present age is 2/5 of father's. After 8 years he will be 1/2 of father's age. Father's age?",options:["40","45","50","60"],answer:0,topic:"Averages and Ages"},
+  {q:"Average of list is 72. Number 97 added, new average is 75. How many originally?",options:["6","7","8","9"],answer:1,topic:"Averages and Ages"},
+  {q:"Ages of A and B in ratio 5:3. After 6 years ratio is 7:5. B's current age?",options:["9","12","15","18"],answer:0,topic:"Averages and Ages"},
+  {q:"Average of 4 observations is 12. After one more, average becomes 10. 5th observation?",options:["1","2","3","4"],answer:1,topic:"Averages and Ages"},
+  {q:"Reena was 1/3 grandfather's age 5 years ago. Present sum is 86. Reena's current age?",options:["17","19","21","23"],answer:2,topic:"Averages and Ages"},
+  {q:"Wrong value 91 used instead of 19 for average of 20 numbers. Corrected avg is 18. Wrong avg?",options:["19.6","20.2","21.6","22.0"],answer:2,topic:"Averages and Ages"},
+  {q:"Average income of 10 is ₹12,000. 2 (avg ₹8,000) leave and 3 (avg ₹14,000) join. New avg?",options:["₹12,727","₹13,090","₹13,272","₹14,000"],answer:2,topic:"Averages and Ages"},
+  {q:"Sachin and Virat ages in ratio 11:9. In 8 years Sachin will be 1.5x Virat's current age. Virat's age?",options:["27","36","45","54"],answer:1,topic:"Averages and Ages"},
+  {q:"Mean of 100 observations is 50. First 50 mean is 60. Last 50 mean?",options:["30","35","40","45"],answer:2,topic:"Averages and Ages"},
+  {q:"A has twice B's age. B has twice C's age. Average of all three is 28. Find A.",options:["36","42","48","54"],answer:2,topic:"Averages and Ages"},
+  {q:"Average temp of week is 32°C. Sum of first 3 days is 105°C, last 3 days is 100°C. 4th day temp?",options:["19°C","20°C","21°C","22°C"],answer:0,topic:"Averages and Ages"},
+  {q:"Father says I was twice your age when you were born. Son is 20. When was father 3x son's age?",options:["10 years ago","15 years ago","20 years ago","5 years ago"],answer:0,topic:"Averages and Ages"},
+  {q:"Average of p numbers is q and average of q numbers is p. Average of all (p+q)?",options:["p+q","pq/(p+q)","2pq/(p+q)","(p+q)/2"],answer:2,topic:"Averages and Ages"},
+  {q:"Average marks increased by 2 when 5 students (scored 40) replaced. Class has 30 students. New students avg?",options:["44","48","50","52"],answer:3,topic:"Averages and Ages"},
+  {q:"Mahesh younger than Suresh by 10 years. 10 years hence Suresh will be twice Mahesh. Mahesh's age?",options:["5","8","10","12"],answer:2,topic:"Averages and Ages"},
+  {q:"Average of 5 quantities is 6. Average of 3 is 8. Average of remaining 2?",options:["2","3","4","5"],answer:1,topic:"Averages and Ages"},
+  {q:"Product of two numbers is 4107, HCF is 3. Average of the two numbers?",options:["41","42","43","44"],answer:1,topic:"Averages and Ages"},
+  {q:"Train covers first half at 45km/h and second half at 60km/h. Average speed?",options:["51.43","52.5","53.1","54.0"],answer:0,topic:"Averages and Ages"},
+  {q:"Present ages ratio father:son = 5:2. 8 years ago ratio was 6:1. Sum of present ages?",options:["35","42","49","56"],answer:2,topic:"Averages and Ages"},
+  {q:"New person 82kg replaces person 62kg, average increases by 2. Number of persons?",options:["8","9","10","11"],answer:2,topic:"Averages and Ages"},
+  {q:"Average of 6 consecutive multiples of 7 is 63. Find the largest.",options:["77","84","91","98"],answer:0,topic:"Averages and Ages"},
+  {q:"If mean of x and 1/x equals k, find mean of x² and 1/x².",options:["k²","2k²-1","k²-1","2k²+1"],answer:1,topic:"Averages and Ages"},
+  {q:"Sum of ages of two friends is 74. After one year ratio will be 9:10. Ratio nine years ago?",options:["7:6","3:2","4:3","13:15"],answer:3,topic:"Averages and Ages"},
+  {q:"The mean of a set of data is 5. Mean if 10 subtracted from each data?",options:["-5","5","10","-15"],answer:0,topic:"Averages and Ages"},
+  {q:"Standard deviation of temps 8°C (min) and 36°C (max) in desert town?",options:["12","22","14","28"],answer:2,topic:"Averages and Ages"},
+  {q:"(3,7,9,N-1,15,18,19,20) ascending order has median 12.5. Value of N?",options:["10.5","11.5","11","12"],answer:2,topic:"Averages and Ages"},
+
+  // RATIO AND PROPORTION (62)
+  {q:"If A:B=2:3 and B:C=4:5, find A:B:C.",options:["8:12:15","8:12:20","2:3:5","6:9:15"],answer:0,topic:"Ratio and Proportion"},
+  {q:"Milk:water in 60 litres is 7:3. Water added to make 3:7?",options:["60L","64L","70L","80L"],answer:3,topic:"Ratio and Proportion"},
+  {q:"Incomes A:B = 3:2. Expenditures 5:3. Both save ₹2000. A's income?",options:["₹10,000","₹12,000","₹14,000","₹15,000"],answer:1,topic:"Ratio and Proportion"},
+  {q:"In 80 litre mixture, acid:water=3:5. To make 1:3, litres of water to add?",options:["30","40","50","60"],answer:1,topic:"Ratio and Proportion"},
+  {q:"P,Q,R share profits 1/2:1/3:1/4. P gets ₹6000 more than R. Total profit?",options:["₹48,000","₹52,000","₹54,000","₹60,000"],answer:1,topic:"Ratio and Proportion"},
+  {q:"If a/b=b/c=c/d=2/3, find a/d.",options:["8/27","4/9","2/3","6/8"],answer:0,topic:"Ratio and Proportion"},
+  {q:"Ratio A:B=5:8. If 6 added to each, ratio becomes 3:4. Find A.",options:["10","12","15","20"],answer:2,topic:"Ratio and Proportion"},
+  {q:"Two vessels have milk:water as 5:1 and 7:1. Mix to get 3:1?",options:["1:2","1:3","2:1","3:1"],answer:3,topic:"Ratio and Proportion"},
+  {q:"Bag: ₹1,₹2,₹5 coins in ratio 3:4:5, total ₹620. Number of ₹2 coins?",options:["60","70","80","90"],answer:2,topic:"Ratio and Proportion"},
+  {q:"If x:y=5:3, find (3x+2y):(5x-3y).",options:["3:2","21:16","7:5","10:7"],answer:1,topic:"Ratio and Proportion"},
+  {q:"Two numbers in ratio 4:5. Subtract 20 from each, ratio becomes 1:2. Find numbers.",options:["44,55","40,50","36,45","32,40"],answer:0,topic:"Ratio and Proportion"},
+  {q:"Ratio A:B:C=3:5:8. B's share is ₹1500. Total amount?",options:["₹4800","₹5000","₹5400","₹6000"],answer:2,topic:"Ratio and Proportion"},
+  {q:"Mean proportion between 9 and 64 is:",options:["24","28","36","40"],answer:0,topic:"Ratio and Proportion"},
+  {q:"If 2x=3y=4z, find x:y:z.",options:["6:4:3","2:3:4","4:3:2","3:4:6"],answer:0,topic:"Ratio and Proportion"},
+  {q:"A and B have ₹1210. 4/15 of A = 2/5 of B. Find B's amount.",options:["₹484","₹726","₹480","₹500"],answer:0,topic:"Ratio and Proportion"},
+  {q:"Ratio of present ages A:B=5:6. After 5 years becomes 6:7. A's present age?",options:["20","25","30","35"],answer:1,topic:"Ratio and Proportion"},
+  {q:"Containers 10,12,15 litres with milk:water 2:1,3:1,4:1. Mixed ratio?",options:["3:1","2:1","117:33","7:3"],answer:2,topic:"Ratio and Proportion"},
+  {q:"If a:b=7:9 and b:c=5:7, then a²:c² is:",options:["25:81","25:63","49:81","35:63"],answer:0,topic:"Ratio and Proportion"},
+  {q:"P and Q invest 3:5, profits shared 1:2. Ratio of time of investment?",options:["5:6","6:5","3:10","10:3"],answer:3,topic:"Ratio and Proportion"},
+  {q:"Sum of three numbers in ratio 3:4:5 is 144. The largest?",options:["48","56","60","72"],answer:2,topic:"Ratio and Proportion"},
+  {q:"A,B,C start business with capitals 1/2:1/3:1/4. After 5 months A withdraws half. Year-end profit ratio?",options:["5:3:2","6:4:3","7:5:6","9:8:6"],answer:2,topic:"Ratio and Proportion"},
+  {q:"Third proportional to 12 and 30 is:",options:["65","72","75","80"],answer:2,topic:"Ratio and Proportion"},
+  {q:"Boys:girls=7:5. If 8 more boys join, ratio becomes 3:2. Original students?",options:["60","72","84","96"],answer:1,topic:"Ratio and Proportion"},
+  {q:"A,B,C get tips in ratio 5:3:2. B and C got ₹800. A gets?",options:["₹1000","₹900","₹800","₹750"],answer:0,topic:"Ratio and Proportion"},
+  {q:"Two alloys: tin:lead=1:3 and 4:6. Mixed equally. Tin proportion in new alloy?",options:["3/8","7/20","2/5","9/20"],answer:1,topic:"Ratio and Proportion"},
+  {q:"If x/3=y/4=z/5, find (x+y+z)/y.",options:["3","4","5","12/4"],answer:0,topic:"Ratio and Proportion"},
+  {q:"20% salt solution mixed with pure water to get 8% salt. Ratio?",options:["2:3","3:2","2:5","5:2"],answer:0,topic:"Ratio and Proportion"},
+  {q:"Salaries A+B=₹55,000. A spends 85%, B spends 75%, savings equal. A's salary?",options:["₹22,000","₹25,000","₹27,000","₹30,000"],answer:1,topic:"Ratio and Proportion"},
+  {q:"If a/b=3/4, find (5a-3b)/(3a+4b).",options:["3/13","3/25","1/5","3/16"],answer:1,topic:"Ratio and Proportion"},
+  {q:"Bronze (Cu:Sn=3:2) and brass (Cu:Zn=5:3) melted equally. % of copper?",options:["57.5%","60%","62.5%","65%"],answer:2,topic:"Ratio and Proportion"},
+  {q:"Profit ₹30,000: A got 3x more than B, B got 2x more than C. A's share?",options:["₹18,000","₹15,000","₹20,000","₹16,000"],answer:0,topic:"Ratio and Proportion"},
+  {q:"18-carat gold is 18/24 pure. Ratio of pure gold to other metals?",options:["3:1","4:3","3:4","1:3"],answer:0,topic:"Ratio and Proportion"},
+  {q:"Boys:girls=9:7. 108 more boys and 84 more girls enroll, ratio becomes 6:5. Original boys?",options:["216","270","324","360"],answer:0,topic:"Ratio and Proportion"},
+  {q:"Two numbers in ratio 3:5. LCM is 120. HCF?",options:["6","8","10","12"],answer:1,topic:"Ratio and Proportion"},
+  {q:"If (2a+3b):(5a-3b)=3:2, find a:b.",options:["3:5","2:3","15:19","19:15"],answer:2,topic:"Ratio and Proportion"},
+  {q:"In ratio a:b:c=2:3:5, if c-a=30, find b.",options:["18","24","30","36"],answer:0,topic:"Ratio and Proportion"},
+  {q:"A,B,C can do work in 20,30,40 days. Together earnings ₹3700. A's share?",options:["₹1600","₹1700","₹1800","₹1900"],answer:0,topic:"Ratio and Proportion"},
+  {q:"x varies directly as y and inversely as z². When y=4,z=2,x=3. Find x when y=9,z=3.",options:["3","4","5","6"],answer:0,topic:"Ratio and Proportion"},
+  {q:"In 40 litre mixture, milk:water=7:1. Milk added to make 5:1?",options:["5L","10L","15L","20L"],answer:1,topic:"Ratio and Proportion"},
+  {q:"Ratio X:Y=2:1. Product is 128. After 5 years X:Y=?",options:["3:2","21:16","5:3","13:11"],answer:3,topic:"Ratio and Proportion"},
+  {q:"₹15,600 divided: for every ₹4 A gets, B gets ₹2 and C gets ₹1. C's share?",options:["₹2,000","₹2,200","₹2,400","₹2,600"],answer:1,topic:"Ratio and Proportion"},
+  {q:"If A:B=1:2, B:C=3:4, C:D=2:3, find A:D.",options:["1:4","1:8","3:16","1:5"],answer:0,topic:"Ratio and Proportion"},
+  {q:"Water:syrup in 20L is 3:2. 4L syrup added, new ratio?",options:["3:4","1:1","2:3","3:2"],answer:1,topic:"Ratio and Proportion"},
+  {q:"P's capital is 1/6 of Q's and 1/8 of R's. Total ₹3,00,000. P's capital?",options:["₹20,000","₹22,000","₹24,000","₹30,000"],answer:0,topic:"Ratio and Proportion"},
+  {q:"If a:b:c:d=2:3:4:5, find (a+d):(b+c).",options:["7:7","7:5","1:1","5:7"],answer:2,topic:"Ratio and Proportion"},
+  {q:"Solution A (30% acid) and B (60% acid) mixed to get 40% acid. Ratio?",options:["1:2","2:1","1:1","3:1"],answer:1,topic:"Ratio and Proportion"},
+  {q:"10 litres of 20% alcohol. Alcohol added to make 50% solution?",options:["6","8","9","12"],answer:0,topic:"Ratio and Proportion"},
+  {q:"If x:y=4:3 and y:z=6:5, find (x²+y²):(y²+z²).",options:["48:45","52:45","7:5","25:21"],answer:1,topic:"Ratio and Proportion"},
+  {q:"Mixture of two liquids 4:3 replaced by 3:4. Total stays 70 litres. How much replaced each time?",options:["10L","20L","30L","40L"],answer:2,topic:"Ratio and Proportion"},
+  {q:"Fourth proportional to 2, 5, 6.",options:["12","14","15","16"],answer:2,topic:"Ratio and Proportion"},
+  {q:"Three glasses milk:water as 3:1,5:3,7:1. Mixed, ratio is:",options:["15:5","41:15","8:3","9:5"],answer:1,topic:"Ratio and Proportion"},
+  {q:"A,B,C invest ₹1000,₹2000,₹3000 for 1,2,3 years. Profit sharing ratio?",options:["1:4:9","1:3:9","1:2:3","2:4:6"],answer:0,topic:"Ratio and Proportion"},
+  {q:"If a+b:b+c:c+a=5:7:6 and a+b+c=18, find a.",options:["4","5","6","7"],answer:1,topic:"Ratio and Proportion"},
+  {q:"Vessel A: spirit:water=5:1, B: 3:7. Mixed 2:3. Spirit in final mixture?",options:["35%","40%","45%","50%"],answer:1,topic:"Ratio and Proportion"},
+  {q:"Investments A:B=4:5. B invested 12 months, profits equal. How long did A invest?",options:["12","15","18","20"],answer:1,topic:"Ratio and Proportion"},
+  {q:"If 3x²-5y²=7xy, find x:y.",options:["5:3","7:3","7:1 or 1:1","7:3 or 1:3"],answer:3,topic:"Ratio and Proportion"},
+  {q:"Dishonest trader uses 800g as 1kg. Ratio of actual to claimed weight?",options:["4:5","5:4","3:4","7:8"],answer:0,topic:"Ratio and Proportion"},
+  {q:"If a:b=3:4 and b:c=8:9, find (a+b):(b+c).",options:["7:9","24:40","5:8","7:17"],answer:0,topic:"Ratio and Proportion"},
+  {q:"Fourth proportional of 0.006, 1.2 and 6/25?",options:["4.8","3.6","36","48"],answer:3,topic:"Ratio and Proportion"},
+  {q:"Ratio of incomes P:Q=7:5, expenditure 4:3. P saves ₹3000, Q saves ₹2000. Q's income?",options:["4000","4500","7000","5000"],answer:0,topic:"Ratio and Proportion"},
+  {q:"Sum in Rs divided among X,Y,Z in 3:5:7 gives Z ₹8000 more than when proportion is 11:15:19. Sum?",options:["180000","120000","175000","135000"],answer:0,topic:"Ratio and Proportion"},
+  {q:"Present ages of three brothers in proportion 12:14:17. Difference between elder and eldest is 6 years. Proportion after 4 years?",options:["40:46:55","14:16:19","42:41:15","14:16:18"],answer:1,topic:"Ratio and Proportion"},
+  {q:"Mean proportional between MPs of (2/7 & 32/343) and (2 & 1/5000)?",options:["2/175","3/35","4/35","2/35"],answer:3,topic:"Ratio and Proportion"},
+
+  // CODING AND DECODING (62)
+  {q:"In a code, PENCIL is written as RGPEKN. How is ERASER coded?",options:["GTVUGT","GVTUGT","GTUVGT","GVTGUT"],answer:0,topic:"Coding and Decoding"},
+  {q:"If FRIEND is coded as HUMJTK, how is CANDLE coded?",options:["ECOFLG","ECPFNG","EDNFOG","ECPOFG"],answer:1,topic:"Coding and Decoding"},
+  {q:"If in a language ABC=6, DEF=15, GHI=24, what is MNO?",options:["39","42","36","45"],answer:1,topic:"Coding and Decoding"},
+  {q:"If 72=49, 63=27, 94=36, then 82=?",options:["16","64","128","12"],answer:0,topic:"Coding and Decoding"},
+  {q:"If MANGO=OCPIQ, then APPLE=?",options:["CRRNG","CRRQG","CQQNG","CRROG"],answer:0,topic:"Coding and Decoding"},
+  {q:"'Sky is Blue'='3 6 4', 'Sea is Deep'='5 6 9', 'Sky is Clear'='3 6 8'. Code for 'Blue'?",options:["3","6","4","8"],answer:2,topic:"Coding and Decoding"},
+  {q:"SLOW is written as NILT. How is FAST coded?",options:["BXOP","CWOP","CXOQ","CWNP"],answer:1,topic:"Coding and Decoding"},
+  {q:"If A=2, B=4, C=6... then CAGE=?",options:["28","30","32","34"],answer:2,topic:"Coding and Decoding"},
+  {q:"Caesar cipher shift=5. Code for HELLO?",options:["MJQQT","LIPPS","MJQQS","MJQPT"],answer:0,topic:"Coding and Decoding"},
+  {q:"24=FA, 39=CI, 54=?",options:["FN","EO","FO","EN"],answer:2,topic:"Coding and Decoding"},
+  {q:"TRIANGLE=SQHZMFKD (each letter -1). HEXAGON=?",options:["GDWZFNM","GEWZFNM","GDXZFNM","GDWYFNM"],answer:0,topic:"Coding and Decoding"},
+  {q:"1 2 3=go to school; 5 6 2=please go home; 7 8 5=please come back. Code for 'home'?",options:["5","6","2","7"],answer:1,topic:"Coding and Decoding"},
+  {q:"MASTER is coded as OCTUVT. PILLAR is coded as:",options:["RKNNCT","RKNNBT","RKNNAT","RKNOCT"],answer:0,topic:"Coding and Decoding"},
+  {q:"'na re pa'='fruit is sweet', 're la si'='is very tasty', 'na si ko'='fruit not available'. Code for 'sweet'?",options:["na","re","pa","si"],answer:2,topic:"Coding and Decoding"},
+  {q:"If CLOCK=56 (position×2), what is WATCH?",options:["94","96","98","100"],answer:0,topic:"Coding and Decoding"},
+  {q:"Mirror code A=Z, B=Y... PYTHON=?",options:["KBGSLM","KBGSLN","KBHSLM","JBGSLM"],answer:0,topic:"Coding and Decoding"},
+  {q:"PHONE coded as URGTS, TABLE as YFGQJ. CHAIR is coded as?",options:["HMFNW","HMGNW","HLFNW","HMFMW"],answer:0,topic:"Coding and Decoding"},
+  {q:"3*7=10; 5*9=14; 8*4=12; then 6*5=?",options:["10","11","12","13"],answer:1,topic:"Coding and Decoding"},
+  {q:"APRIL=1,16,18,9,12. How is JUNE written?",options:["10,21,14,5","10,21,13,5","11,21,14,5","10,20,14,5"],answer:0,topic:"Coding and Decoding"},
+  {q:"If RED=27 (R+E+D=18+5+4), then BLACK=?",options:["29","33","34","37"],answer:1,topic:"Coding and Decoding"},
+  {q:"APPLE is 16-16-12-12-5 (26-pos+1). What is MANGO?",options:["14-1-14-7-15","13-26-14-20-12","14-14-19-20-12","14-14-20-19-12"],answer:2,topic:"Coding and Decoding"},
+  {q:"HONEST=IPOGUV (+1). What does VPBSF mean?",options:["UOARE","LEARN","TRAIN","UOAQE"],answer:0,topic:"Coding and Decoding"},
+  {q:"WATER reversed in alphabet is:",options:["DZGVI","DZTVI","DZFVI","EZGVI"],answer:0,topic:"Coding and Decoding"},
+  {q:"P # Q means P is coded as Q+2. Code of J using #?",options:["H","I","K","L"],answer:3,topic:"Coding and Decoding"},
+  {q:"MONKEY=XDJMNL. How is TIGER coded?",options:["QDFLT","ELVHI","QDFLH","TDFLT"],answer:2,topic:"Coding and Decoding"},
+  {q:"A*B=|A-B|+(A+B)/2. What is 8*4?",options:["8","9","10","12"],answer:0,topic:"Coding and Decoding"},
+  {q:"BRAIN=29541. What does 15394 mean?",options:["BRAIN","BINAR","BANIR","ARBIN"],answer:2,topic:"Coding and Decoding"},
+  {q:"BEAUTIFUL=9, UGLY=4 (letters×position of last letter). NICE=?",options:["20","15","5","4"],answer:0,topic:"Coding and Decoding"},
+  {q:"Each letter replaced by 3 places before it (A→X). DEEP in code is:",options:["ABBM","ABBL","ABAM","AABM"],answer:0,topic:"Coding and Decoding"},
+  {q:"PRINT=16-18-9-14-20, PASTE=16-1-19-20-5. Code for PAPER?",options:["16-1-16-5-18","16-1-16-6-18","17-1-16-5-18","16-1-16-5-17"],answer:0,topic:"Coding and Decoding"},
+  {q:"CALM=4819, LACK=8194. Code for CLAM?",options:["4819","4891","4918","4198"],answer:1,topic:"Coding and Decoding"},
+  {q:"STRONG=VWURQJ (+3). VHFUHW means:",options:["SECURE","SECRET","SENTRY","SELECT"],answer:1,topic:"Coding and Decoding"},
+  {q:"Z=1,Y=2,X=3,...A=26. Then ZONE=?",options:["1-12-13-26","1-13-12-26","1-12-14-22","1-13-14-22"],answer:2,topic:"Coding and Decoding"},
+  {q:"ROPE=72, POLE=60, MOLE=54. HOLE=?",options:["42","44","46","48"],answer:3,topic:"Coding and Decoding"},
+  {q:"ROAM is coded as URDN. CLAN is coded as:",options:["FODQ","FOEQ","FODR","GOEQ"],answer:0,topic:"Coding and Decoding"},
+  {q:"Each letter shifted by its own position (A shifts 1, B shifts 2...). BACK=?",options:["CDFL","CDFM","CCEL","CDEK"],answer:0,topic:"Coding and Decoding"},
+  {q:"BUS=2-21-19, CAR=3-1-18. VAN=?",options:["22-1-14","22-1-13","21-1-14","22-2-14"],answer:0,topic:"Coding and Decoding"},
+  {q:"K*N=K is brother of N; K+N=K husband of N; KxN=K mother of N; K÷N=K sister of N. C is daughter of Y means:",options:["Y+RxC*H÷V","Y+RxH÷C*V","Y+RxH*C÷V","YxR+H*C÷V"],answer:2,topic:"Coding and Decoding"},
+  {q:"SYSTEM=131620 (pairs of positions). TOTAL coded as?",options:["201520112","201512112","201521012","201512120"],answer:2,topic:"Coding and Decoding"},
+  {q:"PAPER=25×1×16×5×18=36000. Code for KEY?",options:["1540","1210","1100","1320"],answer:2,topic:"Coding and Decoding"},
+  {q:"'abc'='xyz','xyz'='pqr','pqr'='lmn','lmn'='abc'. Writing 'xyz' is coded as?",options:["abc","pqr","lmn","xyz"],answer:1,topic:"Coding and Decoding"},
+  {q:"Wrong term in series: CMQ,FPT,JTX,OYC,UFI?",options:["OYC","JTX","FPT","UFI"],answer:3,topic:"Coding and Decoding"},
+  {q:"Wrong term in series: axc,cve,fsh,jpm,oyq,udw?",options:["udw","ojq","jpm","fsh"],answer:2,topic:"Coding and Decoding"},
+  {q:"CODE=3-15-4-5, each digit squared. CODED=?",options:["9-225-16-25","9-225-16-25-9","3-15-4-5-4","9-16-225-25"],answer:1,topic:"Coding and Decoding"},
+  {q:"COMPUTER=37 (sum of position values). LAPTOP coded as?",options:["68","72","74","82"],answer:2,topic:"Coding and Decoding"},
+  {q:"AZ=127, BY=226, CX=325. DW=?",options:["423","424","425","426"],answer:1,topic:"Coding and Decoding"},
+  {q:"Using shift+2 forward, MANGO=?",options:["OCPIQ","PBMHQ","NAOHP","OAQIR"],answer:0,topic:"Coding and Decoding"},
+  {q:"13-1-20-8-19 spells MATHS. Number sequence for LOGIC?",options:["12-15-7-9-3","13-15-7-9-3","12-14-7-9-3","12-15-8-9-3"],answer:0,topic:"Coding and Decoding"},
+  {q:"CHAIR coded as DIBJS. CARPET is coded as:",options:["DBSQFU","DBRPFT","DBTQFU","DBSQGT"],answer:0,topic:"Coding and Decoding"},
+  {q:"CODE=4×15×4×5=1200. NOTE=?",options:["2800","3000","3200","3500"],answer:1,topic:"Coding and Decoding"},
+  {q:"FLOW=6,12,15,23. Reversed code of KEEP?",options:["16-5-5-11","11-5-5-16","11-16-5-5","5-5-11-16"],answer:1,topic:"Coding and Decoding"},
+  {q:"NORTH=3-5-9-2-1 (rank by English frequency). Decode 5-3-9-2-1.",options:["ENRTH","THRNO","NORTH","HONRT"],answer:0,topic:"Coding and Decoding"},
+  {q:"TREE=2000000, BUSH=2000. What is GRASS?",options:["2000000","200000","20000","2000"],answer:1,topic:"Coding and Decoding"},
+  {q:"MDXF:OBZD same pattern as:",options:["CLPQ:MXCF","BMXT:COZW","ILPR:KNRT","SGFN:UEHL"],answer:3,topic:"Coding and Decoding"},
+  {q:"Every vowel→next consonant, every consonant→previous vowel. FATE=?",options:["BUOE","BIOU","EUIO","ABIT"],answer:0,topic:"Coding and Decoding"},
+  {q:"FRESH-SRHFE,CLIMB-BMILC,DOUGH-UODHG,MIXER-XRMIE,CRANK-ACRKN. Same transformation in two pairs?",options:["C and D","B and E","A and D","A and E"],answer:0,topic:"Coding and Decoding"},
+  {q:"If 5^X × 3^Y = 225 × 405, find X^(2Y-3X).",options:["27","81","125","25"],answer:0,topic:"Coding and Decoding"},
+  {q:"Binary code A=1,B=10,C=11... 'CAB' is coded as?",options:["11-1-10","110110","11110","sequence"],answer:0,topic:"Coding and Decoding"},
+  {q:"If STABLE=65, STRONG=74, what is STREAM?",options:["70","72","74","76"],answer:1,topic:"Coding and Decoding"},
+  {q:"Which letter in wheel I,C,E,H,M,T,E,?",options:["N","P","R","U"],answer:2,topic:"Coding and Decoding"},
+  {q:"1=A,2=B,...26=Z but vowels doubled. 'HIDE' in numbers?",options:["8-9-4-5","16-18-4-10","16-9-4-10","8-18-4-10"],answer:3,topic:"Coding and Decoding"},
+  {q:"WMSHD-DSHWM: which pair follows same transformation?",options:["NPKRQ-PRKQN","BWIKG-GIKBW","HQRWK-HKWQR","ZIGPM-PIZGM"],answer:1,topic:"Coding and Decoding"},
+  {q:"In code ORANGE=6-5-1-4-7-3 (positions in word). How is LEMON coded?",options:["5-1-4-2-3","3-2-4-1-5","5-4-1-2-3","3-1-4-5-2"],answer:0,topic:"Coding and Decoding"},
+
+  // BLOOD RELATIONS (62)
+  {q:"Pointing to a man, woman says 'His mother is the only daughter of my mother.' Woman related to man?",options:["Mother","Aunt","Sister","Grandmother"],answer:0,topic:"Blood Relations"},
+  {q:"A is B's brother. C is A's mother. D is C's father. E is D's mother. B related to D?",options:["Grandson","Great Grandson","Granddaughter","Cannot Determine"],answer:3,topic:"Blood Relations"},
+  {q:"'He is the only son of my mother's mother.' Man related to woman?",options:["Father","Uncle","Brother","Cousin"],answer:1,topic:"Blood Relations"},
+  {q:"A+B=A is mother of B; A-B=A is brother of B; A×B=A is father of B; A÷B=A is sister of B. P is maternal uncle of Q?",options:["P-M+Q","P+M-Q","P×M+Q","P÷M-Q"],answer:0,topic:"Blood Relations"},
+  {q:"Raman is son of Akash's father's sister. Akash is nephew of Sonal. Sonal's father is Ashok. Raman's mother is Ashok's daughter-in-law. Raman related to Ashok?",options:["Grandson","Son","Nephew","Brother"],answer:0,topic:"Blood Relations"},
+  {q:"P is Q's son. Q is R's husband. T is R's mother. S is T's father-in-law. P related to S?",options:["Great grandson","Great great grandson","Cannot determine","Grandson"],answer:1,topic:"Blood Relations"},
+  {q:"Man said to woman 'Your only brother's son is my wife's brother.' Woman related to man's wife?",options:["Aunt","Mother","Sister","Mother-in-law"],answer:0,topic:"Blood Relations"},
+  {q:"Sanjay is brother of Meena. Meena married Ravi. Ravi's mother Sita is only child of Gopal. Sanjay related to Sita?",options:["Son-in-law","Nephew","Son","Brother-in-law"],answer:3,topic:"Blood Relations"},
+  {q:"X is brother of Y, Y is sister of Z, Z is son of W. X is related to W?",options:["Son","Daughter","Cannot determine","Nephew"],answer:2,topic:"Blood Relations"},
+  {q:"'Brothers and sisters I have none, but that man's father is my father's son.' Who is in photo?",options:["Son","Father","Brother","The man himself"],answer:0,topic:"Blood Relations"},
+  {q:"A and B couple. C and D siblings. E married D. F is son of E. F related to B?",options:["Grandson","Nephew","Son","Great grandson"],answer:0,topic:"Blood Relations"},
+  {q:"Girl in photo: 'She has no siblings but her mother is only daughter of my grandmother.' Girl related to Ajay?",options:["Niece","Daughter","Sister","Cousin"],answer:1,topic:"Blood Relations"},
+  {q:"M is N's daughter, L is M's mother, P is N's son, R is L's mother-in-law. R related to P?",options:["Grandmother","Great grandmother","Maternal grandmother","Cannot determine"],answer:0,topic:"Blood Relations"},
+  {q:"6 members: B and C siblings. A is father of B. D is son of F. E is A's wife. F is B's sister. D is grandson of A. D's father?",options:["B","C","F","E"],answer:1,topic:"Blood Relations"},
+  {q:"P#Q=P husband of Q; P@Q=P son of Q; P$Q=P sister of Q. 'T is daughter-in-law of R' means?",options:["R@S#T","T#S@R","S@R and T#S","R$S@T"],answer:2,topic:"Blood Relations"},
+  {q:"Rohan: 'He is the only son of the father of the son of the father of my sister's only brother.' Who is in photo?",options:["Rohan himself","Rohan's father","Rohan's grandfather","Rohan's uncle"],answer:0,topic:"Blood Relations"},
+  {q:"A is father of B; B is son of C; C is mother of D; D is sister of E. A related to E?",options:["Father","Brother","Uncle","Grandfather"],answer:2,topic:"Blood Relations"},
+  {q:"K about J: 'He is husband of granddaughter of wife of only son of my grandmother.' K related to J?",options:["Brother","Cousin","Sister-in-law","Cannot determine"],answer:3,topic:"Blood Relations"},
+  {q:"A's maternal uncle's father's only daughter is B. A related to B?",options:["Nephew","Niece","Son","Cannot determine"],answer:3,topic:"Blood Relations"},
+  {q:"P*Q=father; P/Q=mother; P+Q=brother; P-Q=sister. P*Q/R+S means?",options:["S is nephew of P","S is grandson of P","S is son of P","R and S are siblings whose mother is Q granddaughter of P"],answer:3,topic:"Blood Relations"},
+  {q:"Kamini: 'This girl is wife of grandson of my mother.' Kamini related to the girl?",options:["Grandmother","Mother-in-law","Daughter-in-law","Mother"],answer:1,topic:"Blood Relations"},
+  {q:"Couple with 3 children. One child married has 2 kids. Couple has grandson John. John's mother's mother-in-law is couple's daughter. John's father related to couple?",options:["Son","Son-in-law","Grandson","Nephew"],answer:1,topic:"Blood Relations"},
+  {q:"Rita is Mohan's sister-in-law. Mohan married Pooja. Ram is only son of Pooja. Rita related to Ram?",options:["Aunt","Mother","Sister","Cannot determine"],answer:0,topic:"Blood Relations"},
+  {q:"P is son of Q. Q married R. R's mother is S. T is S's husband. U is P's sister. U related to T?",options:["Granddaughter","Daughter","Niece","Grand-niece"],answer:0,topic:"Blood Relations"},
+  {q:"Parents and children: First child has 3 sisters and 1 brother. Second child has 2 brothers and 2 sisters. How many children?",options:["5","6","7","Cannot determine"],answer:0,topic:"Blood Relations"},
+  {q:"Nandita: 'He is husband of only daughter of brother of wife of my husband's father.' Related to Nandita?",options:["Brother-in-law","Nephew","Cousin","Uncle"],answer:0,topic:"Blood Relations"},
+  {q:"My mother's father's son's daughter and I are:",options:["Siblings","Cousins","Same person","Uncle-Nephew"],answer:1,topic:"Blood Relations"},
+  {q:"Sunita is mother of Riya. Sanjay is son-in-law of Sunita's father. Sanjay and Sunita not married. Riya's father is Rohit. Sanjay married to?",options:["Riya","Sunita's sister","Sunita","Riya's sister"],answer:1,topic:"Blood Relations"},
+  {q:"A,B,C,D,E,F: B and C brothers. A is D's mother. F is A's husband. D is E's brother. E is C's daughter. D's maternal grandfather?",options:["B","C","F","Cannot determine"],answer:2,topic:"Blood Relations"},
+  {q:"P is only child of Q. Q married R. S is R's father. T is S's wife. P related to T?",options:["Great grandchild","Grandchild","Child","Cannot determine"],answer:1,topic:"Blood Relations"},
+  {q:"Lakshman→Suresh→Arun, Arun is Smita's brother. Smita is Tina's mother. Tina is Vikram's daughter. Vikram related to Lakshman?",options:["Son","Grandson","Great grandson","Son-in-law"],answer:3,topic:"Blood Relations"},
+  {q:"M is N's mother; N is O's sister; O is P's son; P is Q's father; Q is R's brother. R is P's daughter. M is mother of how many?",options:["2","3","4","Cannot determine"],answer:1,topic:"Blood Relations"},
+  {q:"Ramesh: 'She is wife of my grandfather's only son's only son.' Meena related to Ramesh?",options:["Sister-in-law","Mother","Wife","Cannot determine"],answer:1,topic:"Blood Relations"},
+  {q:"A and B siblings. C is A's son. D is C's wife. E is son of D. F is B's son. E and F are?",options:["Cousins","Brothers","No relation","Second cousins"],answer:0,topic:"Blood Relations"},
+  {q:"My father is the only son of your grandfather. How are we related?",options:["I am your uncle","You are my father","I am your father","You are my sibling's child"],answer:2,topic:"Blood Relations"},
+  {q:"A is B's brother, B is C's mother, C is D's father. A related to D?",options:["Uncle","Grandfather","Great uncle","Cannot determine"],answer:2,topic:"Blood Relations"},
+  {q:"X says 'Y is my wife's husband's mother's son.' Y related to X?",options:["Son","Brother-in-law","Father","Brother"],answer:3,topic:"Blood Relations"},
+  {q:"Ram has son Shyam. Gita is Shyam's wife. Devi is Gita's mother. Prem is Devi's husband. Rahul is Prem's son from another relationship. Rahul related to Ram?",options:["Son-in-law","No blood relation","Grandson","Son"],answer:1,topic:"Blood Relations"},
+  {q:"P*Q=brother; P+Q=daughter; P-Q=mother. A is maternal uncle of B means:",options:["A*C-B","C-A*B","B+C*A","A*C+B"],answer:0,topic:"Blood Relations"},
+  {q:"Woman: 'He is son of the only brother of my son's mother.' Man related to woman?",options:["Son","Brother","Nephew","Cousin"],answer:2,topic:"Blood Relations"},
+  {q:"Geeta's father's only brother is Rajesh. Rajesh's wife is Sunita. Sunita's daughter is Priya. Priya related to Geeta?",options:["Sister","Cousin","Niece","Aunt"],answer:1,topic:"Blood Relations"},
+  {q:"P's mother is sister of Q's father. Q's father is R. P related to R?",options:["Nephew/Niece","Child","Cousin","Cannot determine"],answer:0,topic:"Blood Relations"},
+  {q:"A↑B=son; A↓B=daughter; A→B=husband; A←B=wife. X↓Y→Z↑W means?",options:["X is granddaughter of W","X is daughter-in-law of W","X is niece of W","X is daughter of W's son"],answer:0,topic:"Blood Relations"},
+  {q:"4 generations. Great grandmother, son, son's wife, two grandchildren (siblings). Boy has 1 brother. How many female members?",options:["2","3","4","Cannot determine"],answer:1,topic:"Blood Relations"},
+  {q:"Rahul to Ritu: 'Your father's father's daughter's son is my cousin.' Ritu related to Rahul?",options:["Aunt","Sister","Cousin","Mother"],answer:2,topic:"Blood Relations"},
+  {q:"Man: 'She is mother of son of only child of my parents.' Woman related to man?",options:["Daughter-in-law","Wife","Sister-in-law","Mother"],answer:1,topic:"Blood Relations"},
+  {q:"A's only sibling's only sibling is B. B related to A?",options:["Same person","Sibling","Parent","Cousin"],answer:0,topic:"Blood Relations"},
+  {q:"Vinay is Rohan's father. Rohan is Deepa's only son. Deepa has daughters Preeti and Neha. Vinay's mother is Kamla. Kamla related to Preeti?",options:["Grandmother","Mother","Great-grandmother","Aunt"],answer:0,topic:"Blood Relations"},
+  {q:"Mona is daughter-in-law of Prem. Prem has two sons. Arun is Mona's husband. Sona is Arun's sister. Mona related to Sona?",options:["Sister","Sister-in-law","Aunt","Mother"],answer:1,topic:"Blood Relations"},
+  {q:"D is A's son. B is D's wife. K is B's brother. H is K's mother. E is H's husband. A related to H?",options:["Father-in-law","Son","No relation","Grandfather"],answer:0,topic:"Blood Relations"},
+  {q:"P's grandmother's only daughter-in-law's husband's father is Q. Q related to P?",options:["Great grandfather","Grandfather","Father","Great great grandfather"],answer:0,topic:"Blood Relations"},
+  {q:"7 members: A,B couple. C is B's sister. D is A's son. E is C's daughter. F is D's wife. G is F's son. G related to A?",options:["Grandson","Son","Nephew","Great grandson"],answer:0,topic:"Blood Relations"},
+  {q:"Reema: 'Anuj's mother is only daughter of my father.' Reema's husband related to Anuj?",options:["Uncle","Father","Brother","Cannot determine"],answer:0,topic:"Blood Relations"},
+  {q:"G, GM, S (G's son), D (G's daughter), SW, DH, SS (S's son), DD (D's daughter). SS and DD are?",options:["Cousins","Siblings","Uncle-Niece","No relation"],answer:0,topic:"Blood Relations"},
+  {q:"Man looking at portrait: 'No brothers/sisters. This man's son is my son's father.' Man in portrait is his:",options:["Father","Grandfather","Uncle","Himself"],answer:0,topic:"Blood Relations"},
+  {q:"N's mother is wife of P's father. P has brother O and sister M. M related to N?",options:["Sister","Cousin","Cannot determine","Half-sister"],answer:2,topic:"Blood Relations"},
+  {q:"X is grandson of Y. Z is mother of X. W is brother of Z. T is mother of W. Generations from T to X?",options:["2","3","4","5"],answer:1,topic:"Blood Relations"},
+  {q:"P is Q's father. R is Q's sister. S is R's mother. T is S's father. P related to T?",options:["Son-in-law","Father-in-law","Son","Brother-in-law"],answer:0,topic:"Blood Relations"},
+  {q:"Divya is Kiran's sister. Kiran married Suraj. Suraj's father is Mohan. Mohan's wife is Rekha. Divya related to Rekha?",options:["Daughter-in-law","Niece","Daughter","Sister-in-law"],answer:0,topic:"Blood Relations"},
+  {q:"Shivam: 'She is daughter of only daughter of my grandfather.' Girl related to Shivam?",options:["Sister","Niece","Cousin","Daughter"],answer:0,topic:"Blood Relations"},
+  {q:"Ram has brother Mohan. Mohan is son of Rahul. Seema is Rahul's sister. How is Seema related to Ram?",options:["Aunt","Mother","Sister","Cannot determine"],answer:0,topic:"Blood Relations"},
+  {q:"P@R=P wife of R; P$R=P husband of R; P#R=P son of R. 'D is mother-in-law of A' means?",options:["A#D@C$B","A$B#C@D","A@B#C$D","A@B$C#D"],answer:2,topic:"Blood Relations"},
+  {q:"Given 6 members P,Q,R,S,T and U. How many are teachers? I: Q and T are teachers. II: At least one of P,R is teacher is false, S and U same as P and R.",options:["I alone sufficient","Both needed","Both not sufficient","II alone sufficient"],answer:2,topic:"Blood Relations"},
+  ];
+
+  document.getElementById('qbank-count').textContent = APP.questionBank.length;
+  updateQBankStats();
+  renderQBankPreview();
+}
+
+function updateQBankStats() {
+  const topics = ['Number System','Averages and Ages','Ratio and Proportion','Coding and Decoding','Blood Relations'];
+  const distEl  = document.getElementById('qbank-topic-dist');
+  const statsEl = document.getElementById('qbank-topic-stats');
+  const counts  = topics.map(t => ({ t, n: APP.questionBank.filter(q => q.topic === t).length }));
+
+  if (distEl) distEl.innerHTML = counts.map(c =>
+    `<span class="topic-chip">${c.t.split(' ')[0]}: ${c.n}</span>`
+  ).join('');
+
+  if (statsEl) statsEl.innerHTML = counts.map(c =>
+    `<div><div style="font-size:1.5rem;font-weight:700;color:var(--accent)">${c.n}</div>
+     <div style="font-size:.75rem;color:var(--text2)">${c.t}</div></div>`
+  ).join('');
+}
+
+function renderQBankPreview() {
+  const el = document.getElementById('q-bank-preview');
+  if (!el || APP.questionBank.length === 0) return;
+  el.innerHTML = APP.questionBank.slice(0, 10).map((q, i) => `
+    <div style="padding:1rem 0;border-bottom:1px solid var(--border);">
+      <div style="font-size:.72rem;color:var(--text2);font-family:var(--mono);margin-bottom:.4rem;">
+        Q${i+1} · ${q.topic}
+      </div>
+      <div style="font-size:.88rem;margin-bottom:.5rem;">${q.q}</div>
+      <div style="display:flex;gap:1rem;flex-wrap:wrap;">
+        ${q.options.map((o,oi) => `<span style="font-size:.78rem;${oi===q.answer?'color:var(--accent);font-weight:600;':'color:var(--text2);'}">${['A','B','C','D'][oi]}. ${o}</span>`).join('')}
+      </div>
+    </div>
+  `).join('') + `<div style="color:var(--text2);font-size:.8rem;padding-top:.5rem;">…and ${APP.questionBank.length-10} more questions.</div>`;
+}
+
+// ═══════════════════════════════════════
+// CANDIDATE FLOW
+// ═══════════════════════════════════════
+async function candidateLogin() {
+  const id   = document.getElementById('cand-id-input').value.trim();
+  const pass = document.getElementById('cand-pass-input').value.trim();
+
+  if (!id || !pass) { toast('Enter your ID and password', 'error'); return; }
+
+  showLoading('Verifying credentials…');
+
+  // Always fetch fresh candidates from server
+  const candidates = await API.getCandidates();
+  if (candidates) APP.candidates = candidates;
+
+  // Also load latest config
+  const config = await API.getConfig();
+  if (config) {
+    APP.testConfig.duration   = config.duration;
+    APP.testConfig.qCount     = config.q_count;
+    APP.testConfig.difficulty = config.difficulty;
+  }
+
+  hideLoading();
+
+  const cand = APP.candidates.find(c => c.id === id && c.pass === pass);
+  if (!cand) {
+    toast('Invalid credentials. Contact your exam coordinator.', 'error');
+    return;
+  }
+  if (cand.status === 'completed' || cand.status === 'terminated') {
+    toast('Your test session has already ended.', 'error');
+    return;
+  }
+
+  APP.session.candidate  = cand;
+  APP.session.submitted  = false;
+  APP.session.terminated = false;
+
+  document.getElementById('instr-meta').textContent =
+    `${APP.testConfig.qCount} Questions · ${APP.testConfig.duration} Minutes · Topic-Balanced`;
+
+  showScreen('instructions');
+}
+
+// ═══════════════════════════════════════
+// QUESTION ASSIGNMENT — UNIQUE PER CANDIDATE
+// ═══════════════════════════════════════
+function assignQuestionsToCandidate() {
+  const count  = APP.testConfig.qCount;
+  const topics = ['Number System','Averages and Ages','Ratio and Proportion','Coding and Decoding','Blood Relations'];
+
+  const candId    = APP.session.candidate.id;
+  const usedTexts = APP.usedQuestions[candId] || new Set();
+
+  // Build per-topic shuffled pools (exclude already-used questions)
+  const topicPools = {};
+  topics.forEach(t => {
+    topicPools[t] = shuffleArray(
+      APP.questionBank.filter(q => q.topic === t && !usedTexts.has(q.q))
+    );
+  });
+
+  const perTopic  = Math.floor(count / topics.length);
+  const remainder = count % topics.length;
+  let selected    = [];
+
+  // Shuffle topic order to vary which topics get the "extra" question
+  shuffleArray([...topics]).forEach((topic, i) => {
+    const need = perTopic + (i < remainder ? 1 : 0);
+    selected.push(...topicPools[topic].slice(0, need));
+  });
+
+  // Fill any gap from unused questions
+  if (selected.length < count) {
+    const usedNow = new Set(selected.map(q => q.q));
+    const extras  = shuffleArray(APP.questionBank.filter(q => !usedNow.has(q.q) && !usedTexts.has(q.q)));
+    selected.push(...extras.slice(0, count - selected.length));
+  }
+
+  selected = shuffleArray(selected).slice(0, count);
+
+  // Record used questions for this candidate
+  if (!APP.usedQuestions[candId]) APP.usedQuestions[candId] = new Set();
+  selected.forEach(q => APP.usedQuestions[candId].add(q.q));
+
+  return selected;
+}
+
+function shuffleArray(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+async function startTest() {
+  APP.session.questions        = assignQuestionsToCandidate();
+  APP.session.answers          = {};
+  APP.session.marked           = new Set();
+  APP.session.currentQ         = 0;
+  APP.session.remainingSeconds = APP.testConfig.duration * 60;
+  APP.session.startTime        = Date.now();
+
+  // Mark candidate as active on server
+  APP.session.candidate.status    = 'active';
+  APP.session.candidate.qAnswered = 0;
+  await API.saveCandidate(APP.session.candidate);
+
+  try { await document.documentElement.requestFullscreen(); } catch (e) {}
+
+  showScreen('test');
+  document.getElementById('test-cand-name').textContent = APP.session.candidate.name;
+  document.getElementById('test-cand-id').textContent   = APP.session.candidate.id;
+
+  buildPalette();
+  renderQuestion(0);
+  startTimer();
+  attachAntiCheat();
+}
+
+// ═══════════════════════════════════════
+// TEST UI
+// ═══════════════════════════════════════
+function buildPalette() {
+  const palette   = document.getElementById('q-palette');
+  const mobileNav = document.getElementById('mobile-q-nav');
+  const n         = APP.session.questions.length;
+  const html      = Array.from({length: n}, (_, i) =>
+    `<div class="q-dot" id="dot-${i}" onclick="goToQuestion(${i})">${i+1}</div>`
+  ).join('');
+  palette.innerHTML = html;
+  if (mobileNav) mobileNav.innerHTML = html.replace(/id="dot-/g, 'id="mdot-');
+  updatePalette();
+}
+
+function updatePalette() {
+  const n = APP.session.questions.length;
+  for (let i = 0; i < n; i++) {
+    ['dot-','mdot-'].forEach(prefix => {
+      const dot = document.getElementById(prefix + i);
+      if (!dot) return;
+      dot.className = 'q-dot';
+      if (i === APP.session.currentQ)           dot.classList.add('current');
+      else if (APP.session.marked.has(i))       dot.classList.add('marked');
+      else if (APP.session.answers[i] !== undefined) dot.classList.add('answered');
+    });
+  }
+  const answered = Object.keys(APP.session.answers).length;
+  const total    = APP.session.questions.length;
+  document.getElementById('progress-text').textContent = `${answered}/${total}`;
+  document.getElementById('progress-fill').style.width = `${(answered/total)*100}%`;
+  if (APP.session.candidate) APP.session.candidate.qAnswered = answered;
+  const mDot = document.getElementById('mdot-' + APP.session.currentQ);
+  if (mDot) mDot.scrollIntoView({ behavior:'smooth', inline:'center', block:'nearest' });
+}
+
+function renderQuestion(idx) {
+  APP.session.currentQ = idx;
+  const q     = APP.session.questions[idx];
+  const total = APP.session.questions.length;
+
+  document.getElementById('q-number').textContent = `Question ${idx+1} of ${total}`;
+  document.getElementById('q-topic').textContent  = q.topic;
+  document.getElementById('q-text').textContent   = q.q;
+
+  const letters = ['A','B','C','D'];
+  document.getElementById('options-list').innerHTML = q.options.map((opt, oi) => `
+    <button class="option-btn ${APP.session.answers[idx] === oi ? 'selected' : ''}" onclick="selectOption(${oi})">
+      <span class="opt-letter">${letters[oi]}</span>
+      <span>${opt}</span>
+    </button>
+  `).join('');
+
+  const btnMark = document.getElementById('btn-mark');
+  btnMark.className   = `btn btn-mark${APP.session.marked.has(idx)?' marked':''}`;
+  btnMark.textContent = APP.session.marked.has(idx) ? '🔖 Marked' : '🔖 Mark for Review';
+
+  document.getElementById('btn-prev').disabled = (idx === 0);
+  document.getElementById('btn-next').textContent = idx === total-1 ? 'Submit ✓' : 'Next →';
+
+  updatePalette();
+}
+
+function selectOption(optIdx) {
+  APP.session.answers[APP.session.currentQ] = optIdx;
+  renderQuestion(APP.session.currentQ);
+}
+
+function clearAnswer() {
+  delete APP.session.answers[APP.session.currentQ];
+  renderQuestion(APP.session.currentQ);
+}
+
+function toggleMark() {
+  const i = APP.session.currentQ;
+  if (APP.session.marked.has(i)) APP.session.marked.delete(i);
+  else APP.session.marked.add(i);
+  renderQuestion(i);
+}
+
+function navigate(dir) {
+  const next  = APP.session.currentQ + dir;
+  const total = APP.session.questions.length;
+  if (dir === 1 && next >= total) { openSubmitConfirm(); return; }
+  if (next < 0 || next >= total) return;
+  renderQuestion(next);
+}
+
+function goToQuestion(idx) { renderQuestion(idx); }
+
+// ═══════════════════════════════════════
+// TIMER
+// ═══════════════════════════════════════
+function startTimer() {
+  clearInterval(APP.session.timerInterval);
+  APP.session.timerInterval = setInterval(() => {
+    APP.session.remainingSeconds--;
+    if (APP.session.remainingSeconds <= 0) {
+      clearInterval(APP.session.timerInterval);
+      autoSubmit();
+      return;
+    }
+    updateTimerDisplay();
+  }, 1000);
+  updateTimerDisplay();
+}
+
+function updateTimerDisplay() {
+  const s   = APP.session.remainingSeconds;
+  const m   = Math.floor(s / 60);
+  const sec = s % 60;
+  document.getElementById('timer-display').textContent =
+    `${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+  const timerEl = document.getElementById('test-timer');
+  if (s <= 300) timerEl.classList.add('urgent');
+  else          timerEl.classList.remove('urgent');
+}
+
+function autoSubmit() {
+  toast('Time is up! Test auto-submitted.', 'warn');
+  finalSubmit();
+}
+
+// ═══════════════════════════════════════
+// SUBMIT
+// ═══════════════════════════════════════
+function openSubmitConfirm() {
+  document.getElementById('confirm-answered').textContent = Object.keys(APP.session.answers).length;
+  document.getElementById('confirm-total').textContent    = APP.session.questions.length;
+  document.getElementById('submit-confirm-overlay').classList.add('show');
+}
+
+function closeSubmitConfirm() {
+  document.getElementById('submit-confirm-overlay').classList.remove('show');
+}
+
+async function finalSubmit() {
+  if (APP.session.submitted) return;
+  APP.session.submitted = true;
+  clearInterval(APP.session.timerInterval);
+  document.getElementById('submit-confirm-overlay').classList.remove('show');
+
+  const q = APP.session.questions;
+  let correct = 0, wrong = 0, unattempted = 0;
+  q.forEach((question, i) => {
+    const ans = APP.session.answers[i];
+    if (ans === undefined)            unattempted++;
+    else if (ans === question.answer) correct++;
+    else                              wrong++;
+  });
+
+  const score     = Math.round((correct / q.length) * 100);
+  const timeTaken = formatTime(Math.floor((Date.now() - APP.session.startTime) / 1000));
+
+  APP.session.candidate.status    = 'completed';
+  APP.session.candidate.score     = score;
+  APP.session.candidate.result    = { correct, wrong, unattempted, timeTaken, score };
+
+  const result = {
+    id: APP.session.candidate.id,
+    name: APP.session.candidate.name,
+    score, correct, wrong, unattempted, timeTaken,
+    terminated: false,
+  };
+
+  // Save to server — this broadcasts to admin via SSE
+  await Promise.all([
+    API.saveCandidate(APP.session.candidate),
+    API.saveResult(result),
+  ]);
+
+  if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+
+  document.getElementById('result-candidate-name').textContent = APP.session.candidate.name + ' · ' + APP.session.candidate.id;
+  document.getElementById('result-score').textContent          = score + '%';
+  document.getElementById('result-grade').textContent          =
+    score >= 80 ? '🏆 Excellent Performance' :
+    score >= 60 ? '✅ Good Performance' : '📚 Needs Improvement';
+  document.getElementById('res-correct').textContent    = correct;
+  document.getElementById('res-wrong').textContent      = wrong;
+  document.getElementById('res-unattempted').textContent= unattempted;
+  document.getElementById('res-time').textContent       = 'Time taken: ' + timeTaken;
+  showScreen('result');
+}
+
+async function terminateAndSave(reason) {
+  if (APP.session.terminated) return;
+  APP.session.terminated = true;
+  APP.session.submitted  = true;
+  clearInterval(APP.session.timerInterval);
+  document.getElementById('cheat-overlay').classList.remove('show');
+
+  if (APP.session.candidate) {
+    APP.session.candidate.status = 'terminated';
+    APP.session.candidate.score  = 0;
+    const q = APP.session.questions;
+    let correct = 0, wrong = 0;
+    q.forEach((question, i) => {
+      const ans = APP.session.answers[i];
+      if (ans !== undefined) {
+        if (ans === question.answer) correct++;
+        else wrong++;
+      }
+    });
+    const timeTaken = formatTime(Math.floor((Date.now() - APP.session.startTime) / 1000));
+    const result = {
+      id: APP.session.candidate.id,
+      name: APP.session.candidate.name,
+      score: 0, correct, wrong,
+      unattempted: q.length - correct - wrong,
+      timeTaken, terminated: true,
+    };
+    await Promise.all([
+      API.saveCandidate(APP.session.candidate),
+      API.saveResult(result),
+    ]);
+  }
+
+  if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+
+  document.getElementById('terminate-reason').textContent = reason;
+  document.getElementById('terminate-name').textContent   = APP.session.candidate?.name || '—';
+  document.getElementById('terminate-time').textContent   = new Date().toLocaleTimeString();
+  showScreen('terminated');
+}
+
+function formatTime(seconds) {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+
+// ═══════════════════════════════════════
+// ANTI-CHEAT
+// ═══════════════════════════════════════
+let antiCheatAttached = false;
+
+function attachAntiCheat() {
+  if (antiCheatAttached) return;
+  antiCheatAttached = true;
+  document.addEventListener('visibilitychange', handleVisibilityChange);
+  window.addEventListener('blur', handleWindowBlur);
+  document.addEventListener('fullscreenchange', handleFullscreenChange);
+  document.addEventListener('keydown', handleKeydown);
+  document.addEventListener('contextmenu', e => { if (isTestActive()) e.preventDefault(); });
+  document.addEventListener('copy',  e => { if (isTestActive()) e.preventDefault(); });
+  document.addEventListener('paste', e => { if (isTestActive()) e.preventDefault(); });
+  window.addEventListener('beforeunload', handleBeforeUnload);
+}
+
+function isTestActive() {
+  const s = document.getElementById('screen-test');
+  return s && s.classList.contains('active') && !APP.session.submitted && !APP.session.terminated;
+}
+
+function handleVisibilityChange() {
+  if (!isTestActive()) return;
+  if (document.hidden) triggerCheatWarning('Tab switch or minimize detected');
+}
+
+function handleWindowBlur() {
+  if (!isTestActive()) return;
+  setTimeout(() => { if (!isTestActive()) return; triggerCheatWarning('Window lost focus'); }, 300);
+}
+
+function handleFullscreenChange() {
+  if (!isTestActive()) return;
+  if (!document.fullscreenElement) triggerCheatWarning('Fullscreen exited');
+}
+
+function handleKeydown(e) {
+  if (!isTestActive()) return;
+  if (e.altKey && e.key === 'Tab')  { e.preventDefault(); triggerCheatWarning('Alt+Tab detected'); }
+  if (e.key === 'F12')              { e.preventDefault(); }
+  if (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key)) e.preventDefault();
+  if (e.ctrlKey && e.key === 'u')   e.preventDefault();
+  if (e.key === 'Escape' && !document.fullscreenElement) {
+    document.documentElement.requestFullscreen().catch(() => {});
+  }
+}
+
+function handleBeforeUnload(e) {
+  if (!isTestActive()) return;
+  e.preventDefault();
+  e.returnValue = 'Your test will be terminated if you leave.';
+}
+
+function triggerCheatWarning(reason) {
+  if (APP.session.terminated || APP.session.submitted) return;
+
+  // Log incident to server (broadcasts to admin in real-time)
+  API.logIncident({
+    candidateId:   APP.session.candidate?.id,
+    candidateName: APP.session.candidate?.name || 'Unknown',
+    reason,
+    time: new Date().toLocaleTimeString()
+  });
+
+  document.getElementById('cheat-overlay').classList.add('show');
+  let count = 5;
+  document.getElementById('cheat-countdown').textContent = count;
+  document.getElementById('cheat-cd-txt').textContent    = count;
+
+  const interval = setInterval(() => {
+    count--;
+    document.getElementById('cheat-countdown').textContent = count;
+    document.getElementById('cheat-cd-txt').textContent    = count;
+    if (count <= 0) {
+      clearInterval(interval);
+      terminateAndSave(reason);
+    }
+  }, 1000);
+}
+
+// ═══════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════
+window.addEventListener('load', () => {
+  buildQuestionBank();
+  showScreen('landing');
+  connectSSE();
+});
+</script>
+</body>
+</html>
